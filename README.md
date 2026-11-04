@@ -137,6 +137,14 @@ A different corpus. We took 1,000 posts the model had never seen from another pu
 
 Speed. On the laptop CPU, scoring one message takes a median of 104 ms (95th percentile 146 ms), with both encoders running. The demo server runs on CPU only.
 
+## From Reddit to a real helpline
+
+Every number above comes from Reddit posts and a simulated queue. A helpline would replace both with its own data before Saath changes anyone's wait.
+
+1. Shadow mode for about four weeks. Saath scores every incoming chat and reorders nothing. Counsellors keep answering in arrival order and record the C-SSRS level they judged after each chat, which gives the helpline its own labelled set.
+2. Re-calibrate and check. Refit the urgent and critical cut-offs on those labels with `saath/conformal.py`, then test them on a later month they never saw. The urgent band should miss at most 5% of high-risk chats there. Then replay the helpline's own arrival and abandonment logs to confirm that fewer high-risk chats are lost than in arrival order. `saath/queue_sim.py` draws arrivals from a Poisson process today, so this step needs a small loader for real logs.
+3. Go live for part of each shift, with a way for counsellors to move any chat to the top and to switch the queue back to arrival order. The console has neither control yet. Code-mixed chats keep going to review until there is labelled code-mixed text to retrain on.
+
 ## Limitations and responsible use
 
 Saath is not a diagnostic tool. The C-SSRS levels here come from annotators reading one post, not from a clinical interview. Saath orders a queue for trained counsellors and does not assess anyone.
