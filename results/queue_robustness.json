@@ -1,0 +1,415 @@
+{
+  "baseline": {
+    "counsellors": 4,
+    "load": 1.1,
+    "mean_service": 25.0,
+    "mean_patience": 20.0,
+    "hours": 12.0,
+    "aging": 45.0,
+    "hr_patience": 1.0
+  },
+  "post_bootstrap": {
+    "B": 200,
+    "seeds_per_resample": 30,
+    "abandon": {
+      "First come": {
+        "mean": 0.2109787834743235,
+        "ci": [
+          0.1856738794543299,
+          0.23352414888556078
+        ]
+      },
+      "Keyword": {
+        "mean": 0.16579719133728524,
+        "ci": [
+          0.1430559980878209,
+          0.18681398092864543
+        ]
+      },
+      "Saath": {
+        "mean": 0.1519053531837368,
+        "ci": [
+          0.13142844420005317,
+          0.17129220404615106
+        ]
+      },
+      "Frontier LLM": {
+        "mean": 0.1471900936273928,
+        "ci": [
+          0.1242330247806048,
+          0.16945939896246154
+        ]
+      },
+      "Oracle": {
+        "mean": 0.138654554899391,
+        "ci": [
+          0.11522195103367126,
+          0.16050814497433877
+        ]
+      }
+    },
+    "diff_vs_saath": {
+      "First come": {
+        "mean": 0.05907343029058667,
+        "ci": [
+          0.044049959872928486,
+          0.07680990653748906
+        ],
+        "share_saath_better": 1.0
+      },
+      "Keyword": {
+        "mean": 0.013891838153548407,
+        "ci": [
+          -2.6158955047080034e-05,
+          0.031426828547735645
+        ],
+        "share_saath_better": 0.97
+      },
+      "Frontier LLM": {
+        "mean": -0.004715259556344009,
+        "ci": [
+          -0.017637174787133895,
+          0.009349070920370788
+        ],
+        "share_saath_better": 0.235
+      },
+      "Oracle": {
+        "mean": -0.013250798284345828,
+        "ci": [
+          -0.028223530991893463,
+          0.0008356834278423222
+        ],
+        "share_saath_better": 0.04
+      }
+    },
+    "relative_reduction_vs_fifo": {
+      "mean": 0.27969583951389876,
+      "ci": [
+        0.21453735579533872,
+        0.36331376213810884
+      ]
+    }
+  },
+  "sensitivity": [
+    {
+      "factor": "high-risk prevalence",
+      "value": 0.05,
+      "abandon": {
+        "First come": 0.20322060489845725,
+        "Keyword": 0.14045222115691913,
+        "Saath": 0.14100254704281548,
+        "Frontier LLM": 0.12347589025441377,
+        "Oracle": 0.11573646338747011
+      },
+      "low_abandon": {
+        "First come": 0.2229996809032525,
+        "Keyword": 0.22831502150597865,
+        "Saath": 0.22818704235041953,
+        "Frontier LLM": 0.2292364012570592,
+        "Oracle": 0.22791913912836578
+      },
+      "relative_reduction": 0.30616018433135817,
+      "share_of_oracle_gain": 0.7111924147741429
+    },
+    {
+      "factor": "high-risk prevalence",
+      "value": 0.1,
+      "abandon": {
+        "First come": 0.21407720825213086,
+        "Keyword": 0.16681963074764933,
+        "Saath": 0.131620032988454,
+        "Frontier LLM": 0.13241437372397125,
+        "Oracle": 0.12244847335327212
+      },
+      "low_abandon": {
+        "First come": 0.22304261646176285,
+        "Keyword": 0.22786542770324666,
+        "Saath": 0.23206939039736066,
+        "Frontier LLM": 0.23114374608438534,
+        "Oracle": 0.23391932207686153
+      },
+      "relative_reduction": 0.38517493728973873,
+      "share_of_oracle_gain": 0.8999052028241402
+    },
+    {
+      "factor": "high-risk prevalence",
+      "value": 0.21,
+      "abandon": {
+        "First come": 0.22029739627994863,
+        "Keyword": 0.1686757892274765,
+        "Saath": 0.15805192717724778,
+        "Frontier LLM": 0.15004080677878662,
+        "Oracle": 0.14186954943439295
+      },
+      "low_abandon": {
+        "First come": 0.2224205787313942,
+        "Keyword": 0.23767536407100412,
+        "Saath": 0.23965409916689576,
+        "Frontier LLM": 0.24188901987883138,
+        "Oracle": 0.24415446721137007
+      },
+      "relative_reduction": 0.2825519963186528,
+      "share_of_oracle_gain": 0.7936654084776541
+    },
+    {
+      "factor": "high-risk patience multiplier",
+      "value": 0.5,
+      "abandon": {
+        "First come": 0.3101326167837197,
+        "Keyword": 0.25535381399940044,
+        "Saath": 0.23753036077750864,
+        "Frontier LLM": 0.22984831741305725,
+        "Oracle": 0.2180087424883264
+      },
+      "low_abandon": {
+        "First come": 0.20749326298181064,
+        "Keyword": 0.2210679371279404,
+        "Saath": 0.22660560654946105,
+        "Frontier LLM": 0.22824227913537606,
+        "Oracle": 0.2280206403553739
+      },
+      "relative_reduction": 0.23410067847472615,
+      "share_of_oracle_gain": 0.7880938199951668
+    },
+    {
+      "factor": "high-risk patience multiplier",
+      "value": 1.0,
+      "abandon": {
+        "First come": 0.2200005230783316,
+        "Keyword": 0.17267494672729608,
+        "Saath": 0.15069904066999246,
+        "Frontier LLM": 0.14837850871100117,
+        "Oracle": 0.1377617239628672
+      },
+      "low_abandon": {
+        "First come": 0.22151162655718262,
+        "Keyword": 0.23752720461319124,
+        "Saath": 0.24261598037335308,
+        "Frontier LLM": 0.24243974019952408,
+        "Oracle": 0.24340268623406805
+      },
+      "relative_reduction": 0.3150059892524174,
+      "share_of_oracle_gain": 0.8426859724816618
+    },
+    {
+      "factor": "high-risk patience multiplier",
+      "value": 2.0,
+      "abandon": {
+        "First come": 0.13597297543777112,
+        "Keyword": 0.10395079783406848,
+        "Saath": 0.08778281750171826,
+        "Frontier LLM": 0.08696757221723196,
+        "Oracle": 0.07785801357276723
+      },
+      "low_abandon": {
+        "First come": 0.23671563066610948,
+        "Keyword": 0.24906677410603056,
+        "Saath": 0.2542329452102994,
+        "Frontier LLM": 0.252317346807457,
+        "Oracle": 0.2537472575426335
+      },
+      "relative_reduction": 0.35440982137003674,
+      "share_of_oracle_gain": 0.8292211917473935
+    },
+    {
+      "factor": "aging (minutes per unit risk)",
+      "value": 15.0,
+      "abandon": {
+        "First come": 0.2200005230783316,
+        "Keyword": 0.1836787123804916,
+        "Saath": 0.1727844817714667,
+        "Frontier LLM": 0.16754965708281058,
+        "Oracle": 0.14744532685638045
+      },
+      "low_abandon": {
+        "First come": 0.22151162655718262,
+        "Keyword": 0.23411175550649763,
+        "Saath": 0.23507747932198642,
+        "Frontier LLM": 0.23758568181517992,
+        "Oracle": 0.24127808593229474
+      },
+      "relative_reduction": 0.2146178592950596,
+      "share_of_oracle_gain": 0.6507603006465297
+    },
+    {
+      "factor": "aging (minutes per unit risk)",
+      "value": 45.0,
+      "abandon": {
+        "First come": 0.2200005230783316,
+        "Keyword": 0.17267494672729608,
+        "Saath": 0.15069904066999246,
+        "Frontier LLM": 0.14837850871100117,
+        "Oracle": 0.1377617239628672
+      },
+      "low_abandon": {
+        "First come": 0.22151162655718262,
+        "Keyword": 0.23752720461319124,
+        "Saath": 0.24261598037335308,
+        "Frontier LLM": 0.24243974019952408,
+        "Oracle": 0.24340268623406805
+      },
+      "relative_reduction": 0.3150059892524174,
+      "share_of_oracle_gain": 0.8426859724816618
+    },
+    {
+      "factor": "aging (minutes per unit risk)",
+      "value": 120.0,
+      "abandon": {
+        "First come": 0.2200005230783316,
+        "Keyword": 0.171222322509808,
+        "Saath": 0.144148369349897,
+        "Frontier LLM": 0.14482942433513424,
+        "Oracle": 0.1377617239628672
+      },
+      "low_abandon": {
+        "First come": 0.22151162655718262,
+        "Keyword": 0.238268051166062,
+        "Saath": 0.24336318012490282,
+        "Frontier LLM": 0.2404477517253875,
+        "Oracle": 0.24340268623406805
+      },
+      "relative_reduction": 0.344781697184544,
+      "share_of_oracle_gain": 0.9223402401819747
+    },
+    {
+      "factor": "aging (minutes per unit risk)",
+      "value": "none",
+      "abandon": {
+        "First come": 0.2200005230783316,
+        "Keyword": 0.16899875539065265,
+        "Saath": 0.14591096617097657,
+        "Frontier LLM": 0.14496820016412487,
+        "Oracle": 0.1377617239628672
+      },
+      "low_abandon": {
+        "First come": 0.22151162655718262,
+        "Keyword": 0.23843442349405952,
+        "Saath": 0.2403630500363585,
+        "Frontier LLM": 0.2397675688540437,
+        "Oracle": 0.24340268623406805
+      },
+      "relative_reduction": 0.33676991250141397,
+      "share_of_oracle_gain": 0.9009075728760616
+    },
+    {
+      "factor": "counsellors",
+      "value": 2,
+      "abandon": {
+        "First come": 0.2909445449344831,
+        "Keyword": 0.2475822877672723,
+        "Saath": 0.24204331069114354,
+        "Frontier LLM": 0.23546354064465522,
+        "Oracle": 0.2279831201936465
+      },
+      "low_abandon": {
+        "First come": 0.29027685102179296,
+        "Keyword": 0.30063484826064135,
+        "Saath": 0.30508903583714947,
+        "Frontier LLM": 0.3059903533566987,
+        "Oracle": 0.30681996535255923
+      },
+      "relative_reduction": 0.16807750856559778,
+      "share_of_oracle_gain": 0.7766856363976521
+    },
+    {
+      "factor": "counsellors",
+      "value": 4,
+      "abandon": {
+        "First come": 0.2200005230783316,
+        "Keyword": 0.17267494672729608,
+        "Saath": 0.15069904066999246,
+        "Frontier LLM": 0.14837850871100117,
+        "Oracle": 0.1377617239628672
+      },
+      "low_abandon": {
+        "First come": 0.22151162655718262,
+        "Keyword": 0.23752720461319124,
+        "Saath": 0.24261598037335308,
+        "Frontier LLM": 0.24243974019952408,
+        "Oracle": 0.24340268623406805
+      },
+      "relative_reduction": 0.3150059892524174,
+      "share_of_oracle_gain": 0.8426859724816618
+    },
+    {
+      "factor": "counsellors",
+      "value": 8,
+      "abandon": {
+        "First come": 0.17358197895109728,
+        "Keyword": 0.11856366237203352,
+        "Saath": 0.09792265605549225,
+        "Frontier LLM": 0.09593643306296054,
+        "Oracle": 0.08797240511360262
+      },
+      "low_abandon": {
+        "First come": 0.17588198968662933,
+        "Keyword": 0.18977568584850998,
+        "Saath": 0.1956056921195882,
+        "Frontier LLM": 0.1963417350497655,
+        "Oracle": 0.19892149586509908
+      },
+      "relative_reduction": 0.43587083954677286,
+      "share_of_oracle_gain": 0.8837717500991497
+    },
+    {
+      "factor": "mean patience (minutes)",
+      "value": 10.0,
+      "abandon": {
+        "First come": 0.2532415587202471,
+        "Keyword": 0.2185667904904407,
+        "Saath": 0.20691326833003515,
+        "Frontier LLM": 0.20583527390027592,
+        "Oracle": 0.19809936574897039
+      },
+      "low_abandon": {
+        "First come": 0.2556292084821493,
+        "Keyword": 0.2655494506609829,
+        "Saath": 0.2679547290319543,
+        "Frontier LLM": 0.2680713867942863,
+        "Oracle": 0.2692993896703221
+      },
+      "relative_reduction": 0.18294110423396293,
+      "share_of_oracle_gain": 0.8401604632290218
+    },
+    {
+      "factor": "mean patience (minutes)",
+      "value": 20.0,
+      "abandon": {
+        "First come": 0.2200005230783316,
+        "Keyword": 0.17267494672729608,
+        "Saath": 0.15069904066999246,
+        "Frontier LLM": 0.14837850871100117,
+        "Oracle": 0.1377617239628672
+      },
+      "low_abandon": {
+        "First come": 0.22151162655718262,
+        "Keyword": 0.23752720461319124,
+        "Saath": 0.24261598037335308,
+        "Frontier LLM": 0.24243974019952408,
+        "Oracle": 0.24340268623406805
+      },
+      "relative_reduction": 0.3150059892524174,
+      "share_of_oracle_gain": 0.8426859724816618
+    },
+    {
+      "factor": "mean patience (minutes)",
+      "value": 40.0,
+      "abandon": {
+        "First come": 0.18203589402630047,
+        "Keyword": 0.1250467566468237,
+        "Saath": 0.1096163562394243,
+        "Frontier LLM": 0.10486358998273691,
+        "Oracle": 0.09396651453195387
+      },
+      "low_abandon": {
+        "First come": 0.18898622620893113,
+        "Keyword": 0.206502910863928,
+        "Saath": 0.20781165093043352,
+        "Frontier LLM": 0.21069026378383968,
+        "Oracle": 0.21268796009351396
+      },
+      "relative_reduction": 0.3978310880622974,
+      "share_of_oracle_gain": 0.8223009881831286
+    }
+  ]
+}

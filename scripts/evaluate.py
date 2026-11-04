@@ -1,10 +1,11 @@
 """Build results/report.json from the out-of-fold predictions.
 
-    uv run python scripts/evaluate.py --ours deberta_j03
+    uv run python scripts/evaluate.py --ours nested
 
 Everything here uses predictions made on posts the model never trained on.
-The conformal checks are cross-fitted: the cut-off for fold k is calibrated
-on the other four folds' predictions and tested on fold k.
+The conformal checks come from scripts/nested.py, where each fold's cut-offs
+are calibrated on a held-out slice of its own training folds (exact split
+conformal).
 """
 
 from __future__ import annotations
@@ -20,7 +21,7 @@ from sklearn.model_selection import StratifiedKFold
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from saath import conformal, data, metrics, models, queue_sim
+from saath import data, metrics, models, queue_sim
 
 OOF = ROOT / "results" / "oof"
 OUT = ROOT / "results"
@@ -47,37 +48,6 @@ def model_row(name, y, level, score=None, ours=False):
 
         row["hr_auroc"] = metrics.bootstrap(lambda a, s: roc_auc_score(a >= data.HIGH_RISK, s), y, score, n=1000)
     return row
-
-
-def cross_fitted_conformal(exceed, y, alpha_u=0.05, alpha_l=0.1):
-    folds = list(StratifiedKFold(5, shuffle=True, random_state=0).split(exceed, y))
-    urgent = np.zeros(len(y), dtype=bool)
-    sets = np.zeros((len(y), 2), dtype=int)
-    for _, te in folds:
-        cal = np.setdiff1d(np.arange(len(y)), te)
-        u = conformal.UrgentThreshold(alpha_u).fit(models.risk_score(exceed[cal]), y[cal])
-        urgent[te] = u.urgent(models.risk_score(exceed[te]))
-        ls = conformal.LevelSets(alpha_l).fit(models.to_level_proba(exceed[cal]), y[cal])
-        sets[te] = ls.predict(models.to_level_proba(exceed[te]))
-    hr = y >= data.HIGH_RISK
-    cov = conformal.covered(sets, y)
-    return {
-        "urgent": {
-            "alpha": alpha_u,
-            "miss_rate": float((~urgent[hr]).mean()),
-            "miss_ci": metrics.bootstrap(lambda u: float((~u).mean()), urgent[hr], n=1000)[1:],
-            "urgent_share": float(urgent.mean()),
-            "precision": float(hr[urgent].mean()),
-        },
-        "level_sets": {
-            "alpha": alpha_l,
-            "coverage": float(cov.mean()),
-            "mean_width": float((sets[:, 1] - sets[:, 0] + 1).mean()),
-            "singleton_share": float((sets[:, 0] == sets[:, 1]).mean()),
-            "coverage_by_level": {int(k): float(cov[y == k].mean()) for k in range(data.N_LEVELS)},
-        },
-        "_urgent_mask": urgent,
-    }
 
 
 def queue_report(y, policies, loads, seeds):
@@ -125,7 +95,7 @@ def queue_report(y, policies, loads, seeds):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--ours", required=True)
+    ap.add_argument("--ours", default="nested")
     ap.add_argument("--seeds", type=int, default=300)
     args = ap.parse_args()
 
@@ -155,8 +125,7 @@ def main():
     vs_best = metrics.paired_bootstrap(metrics.qwk, y, ours_level, llm[:, best], n=2000)
     vs_tfidf = metrics.paired_bootstrap(metrics.qwk, y, ours_level, models.predict_level(tfidf), n=2000)
 
-    conf = cross_fitted_conformal(ours, y)
-    urgent_mask = conf.pop("_urgent_mask")
+    conf = json.loads((OUT / "conformal.json").read_text())
 
     # Calibration of the high-risk probability.
     hr = (y >= data.HIGH_RISK).astype(int)
@@ -200,11 +169,11 @@ def main():
         "models": rows,
         "vs_best_llm_qwk": vs_best,
         "vs_tfidf_qwk": vs_tfidf,
-        "models_note": "Five-fold cross-validation; every post has a different author, so no writer appears in both "
+        "models_note": "Nested five-fold cross-validation (C chosen inside each training fold); every post has a "
+        "different author, so no writer appears in both "
         "training and test. Brackets are 95% bootstrap intervals. LLM labels were collected zero-shot by the "
         "dataset authors.",
         **conf,
-        "urgent_band_share": float(urgent_mask.mean()),
         "reliability": reliability,
         "ece_high_risk": metrics.ece(ours_risk, hr),
         "ece_high_risk_recalibrated": metrics.ece(shown, hr),
@@ -217,7 +186,7 @@ def main():
             "patience. Shaded bands are 95% intervals for the mean. Oracle knows the true level.",
         },
     }
-    for extra in ["codemixed", "external", "latency"]:
+    for extra in ["codemixed", "external", "latency", "queue_robustness", "codemixed_select"]:
         p = OUT / f"{extra}.json"
         if p.exists():
             report[extra] = json.loads(p.read_text())

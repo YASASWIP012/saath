@@ -53,8 +53,11 @@ class LevelSets:
     always one contiguous range.
     """
 
-    def __init__(self, alpha: float = 0.1):
+    def __init__(self, alpha: float = 0.1, by_level: bool = False):
         self.alpha = alpha
+        # by_level calibrates one cut-off per true level (Mondrian conformal),
+        # so every level, not just the average, gets 1 - alpha coverage.
+        self.by_level = by_level
 
     @staticmethod
     def _tail_scores(level_proba):
@@ -66,22 +69,27 @@ class LevelSets:
     def fit(self, level_proba, level):
         y = np.asarray(level)
         scores = self._tail_scores(level_proba)[np.arange(len(y)), y]
-        n = len(scores)
-        k = math.floor(self.alpha * (n + 1))
-        self.tau_ = -np.inf if k == 0 else float(np.sort(scores)[k - 1])
+        self.tau_ = self._cut(scores)
+        if self.by_level:
+            self.tau_by_level_ = np.array([self._cut(scores[y == v]) for v in range(level_proba.shape[1])])
         # Kept for the API; with this score the cut-off itself is tau_.
         self.qhat_ = self.tau_
         return self
 
+    def _cut(self, scores) -> float:
+        k = math.floor(self.alpha * (len(scores) + 1))
+        return -np.inf if k == 0 else float(np.sort(scores)[k - 1])
+
     def predict(self, level_proba) -> np.ndarray:
         """(n, 2) array of [low, high] levels, inclusive."""
         scores = self._tail_scores(level_proba)
-        keep = scores >= self.tau_
+        keep = scores >= (self.tau_by_level_[None, :] if self.by_level else self.tau_)
         out = np.empty((len(keep), 2), dtype=int)
         for i, row in enumerate(keep):
             idx = np.flatnonzero(row)
             if idx.size == 0:
                 idx = np.array([int(np.argmax(scores[i]))])
+            # Filling any gap keeps one contiguous range and only adds coverage.
             out[i] = idx.min(), idx.max()
         return out
 

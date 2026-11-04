@@ -28,6 +28,9 @@ class Scenario:
     mean_patience: float = 20.0  # minutes before an unanswered person gives up
     hours: float = 12.0
     aging: float = 45.0  # minutes of waiting worth one full unit of risk
+    # Patience multiplier for people at level 4+. Below 1 means high-risk
+    # texters give up sooner than others; above 1, they hold on longer.
+    hr_patience: float = 1.0
 
 
 def _draws(scn: Scenario, n_pool: int, rng):
@@ -54,6 +57,7 @@ def replay(priority, level, scn: Scenario, seed: int):
     arrive, who, service, patience = _draws(scn, len(level), rng)
     lv = np.asarray(level)[who]
     prio = np.zeros(len(who)) if priority is None else np.asarray(priority)[who]
+    patience = np.where(lv >= HIGH_RISK, patience * scn.hr_patience, patience)
 
     n = len(arrive)
     wait = np.full(n, np.nan)

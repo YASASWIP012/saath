@@ -1,0 +1,44 @@
+{
+  "method": "split conformal inside each outer fold: fit on 75% of the training folds, calibrate on the other 25%, test on the outer fold",
+  "urgent": {
+    "alpha": 0.05,
+    "miss_rate": 0.02040816326530612,
+    "miss_ci": [
+      0.004081632653061225,
+      0.04081632653061224
+    ],
+    "urgent_share": 0.4735042735042735,
+    "precision": 0.4332129963898917,
+    "n_high_risk": 245
+  },
+  "level_sets": {
+    "alpha": 0.1,
+    "coverage": 0.9,
+    "mean_width": 2.5136752136752136,
+    "singleton_share": 0.3162393162393162,
+    "coverage_by_level": {
+      "0": 0.9202279202279202,
+      "1": 0.945,
+      "2": 0.9271523178807947,
+      "3": 0.7638888888888888,
+      "4": 0.7567567567567568,
+      "5": 0.72,
+      "6": 0.8987341772151899
+    }
+  },
+  "level_sets_by_level": {
+    "alpha": 0.1,
+    "coverage": 0.941025641025641,
+    "mean_width": 4.736752136752137,
+    "singleton_share": 0.0,
+    "coverage_by_level": {
+      "0": 0.8945868945868946,
+      "1": 0.935,
+      "2": 0.9735099337748344,
+      "3": 1.0,
+      "4": 1.0,
+      "5": 0.98,
+      "6": 0.9367088607594937
+    }
+  }
+}

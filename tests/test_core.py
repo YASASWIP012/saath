@@ -94,3 +94,24 @@ def test_oracle_order_does_not_lose_more_high_risk_people_than_fifo():
         seeds=range(40),
     )
     assert res["oracle"]["hr_abandon"].mean() < res["fifo"]["hr_abandon"].mean()
+
+
+def test_level_sets_by_level_cover_every_level():
+    rng = np.random.default_rng(2)
+    n = 6000
+    level = rng.integers(0, N_LEVELS, n)
+    logits = rng.normal(0, 1, (n, N_LEVELS))
+    logits[np.arange(n), level] += 1.5 + level * 0.3  # some levels easier than others
+    p = np.exp(logits) / np.exp(logits).sum(1, keepdims=True)
+    ls = conformal.LevelSets(0.1, by_level=True).fit(p[:4000], level[:4000])
+    cov = conformal.covered(ls.predict(p[4000:]), level[4000:])
+    for v in range(N_LEVELS):
+        assert cov[level[4000:] == v].mean() >= 0.85
+
+
+def test_risk_dependent_patience_changes_only_high_risk_texters():
+    level = np.array([0, 6] * 100)
+    base = queue_sim.replay(None, level, queue_sim.Scenario(hours=4), seed=5)
+    impatient = queue_sim.replay(None, level, queue_sim.Scenario(hours=4, hr_patience=0.25), seed=5)
+    hr = base["level"] >= HIGH_RISK
+    assert impatient["abandoned"][hr].mean() >= base["abandoned"][hr].mean()

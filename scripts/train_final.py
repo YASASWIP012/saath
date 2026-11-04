@@ -1,10 +1,11 @@
-"""Fit the deployed model on every post and write artifacts/.
+"""Fit the deployed model and write artifacts/.
 
-    uv run python scripts/train_final.py --oof ensemble
+    uv run python scripts/train_final.py
 
-The conformal cut-offs are calibrated on the out-of-fold predictions of the
-same configuration (cross-conformal), because a model scored on its own
-training data would look far more certain than it is.
+The model is fitted on a stratified 80% of the posts and both conformal
+cut-offs are set on the other 20%, which the model never sees. That makes
+the deployed guarantees exact split conformal, at the cost of training on
+fewer posts. C is the value nested cross-validation picked most often.
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from pathlib import Path
 
 import joblib
 import numpy as np
+from sklearn.model_selection import train_test_split
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -28,15 +30,19 @@ ART = ROOT / "artifacts"
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--oof", required=True, help="tag of the cross-validated run to calibrate from")
+    ap.add_argument("--calibration-share", type=float, default=0.2)
     args = ap.parse_args()
 
-    run = json.loads((ROOT / "results" / "oof" / f"{args.oof}.json").read_text())["args"]
-    df = data.load()
-    y = df.level.to_numpy()
+    nested = json.loads((ROOT / "results" / "oof" / "nested.json").read_text())
+    picks = [c["C"] for c in nested["chosen"]]
+    C = max(set(picks), key=picks.count)
 
-    cal = Calibration.fit(np.load(ROOT / "results" / "oof" / f"{args.oof}.npy"), y)
-    model = models.default_model(C=run.get("C", 1.0)).fit(df.text.tolist(), y)
+    df = data.load()
+    texts, y = df.text.tolist(), df.level.to_numpy()
+    fit, cal_idx = train_test_split(np.arange(len(y)), test_size=args.calibration_share, stratify=y, random_state=0)
+    model = models.default_model(C=C).fit([texts[i] for i in fit], y[fit])
+    cal = Calibration.fit(model.exceed_proba([texts[i] for i in cal_idx]), y[cal_idx])
+    run = {"C": C, "fit_posts": len(fit), "calibration_posts": len(cal_idx)}
     for m in model.members:
         if isinstance(m, models.EmbedOrdinal):
             m.cache = False
@@ -45,7 +51,7 @@ def main():
     joblib.dump(model, ART / "model.joblib")
     cal.save(ART / "calibration.json")
     (ART / "model.json").write_text(
-        json.dumps({"kind": "sklearn", "trained_on": len(y), "encoders": models.ENCODERS, "config": run}, indent=2)
+        json.dumps({"kind": "sklearn", "trained_on": len(fit), "encoders": models.ENCODERS, "config": run}, indent=2)
     )
     print("saved", cal)
 
