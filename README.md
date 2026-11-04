@@ -5,7 +5,7 @@ Neural Storm 2026 · Track 3 (Human Impact) · Problem statement HI-05, Mental H
 Saath sorts the waiting queue of a crisis text line by suicide risk, so the people closest to acting reach a counsellor first. It runs on an ordinary laptop CPU. A helpline can host it on its own machine, and no message is ever sent to an outside API.
 
 - Team: Yasaswi Paruchuri (solo)
-- Live demo: [huggingface.co/spaces/yasaswip012/saath](https://huggingface.co/spaces/yasaswip012/saath). The hosted page is a static copy of the console. The queue, the evidence and the night replay show responses the full model produced in advance (`scripts/build_static.py`). Text you type there is scored at once by the TF-IDF member alone (κ 0.70 against 0.81 for the full model). Press **Load the full model** to run the whole ensemble in your browser instead: it downloads int8 builds of both encoders (about 390 MB, once) and applies the deployed heads and cut-offs (`app/static/full.js`). On the 26 messages the Python service scored in advance, the browser gave the same band on all 26 and the same plausible range on 25. P(level 4+) differed by 0.018 on average (at most 0.098), because the encoders are int8. The single most likely level matched on 22, and the four that differ have a nearly flat distribution around the 0.5 cut, where the point level is unstable anyway.
+- Live demo: [huggingface.co/spaces/yasaswip012/saath](https://huggingface.co/spaces/yasaswip012/saath). Press **Load the full model** on the Try a message tab to run the whole ensemble in your browser (about 390 MB, once). See [the hosted demo](#the-hosted-demo) for how it compares with the Python service.
 - Code: [github.com/YASASWIP012/saath](https://github.com/YASASWIP012/saath)
 - Demo video (92 seconds): [video/saath_demo.mp4](video/saath_demo.mp4)
 
@@ -165,6 +165,12 @@ Code-mixed text is the weakest point, as the stress test shows. The language che
 Usernames and URLs are removed on load, the deployed model writes nothing to disk, and no third-party API is called anywhere.
 
 If you or someone you know is struggling, in India you can call Tele-MANAS on 14416 (free, 24×7, 20 languages) or emergency services on 112.
+
+## The hosted demo
+
+The Hugging Face page is a static copy of the console. The queue, the evidence and the night replay show responses the full model produced in advance (`scripts/build_static.py`). Typed text is scored at once by the TF-IDF member alone (κ 0.70 against 0.81 for the full model). **Load the full model** downloads int8 builds of both encoders and applies the deployed heads and cut-offs in the browser (`app/static/full.js`).
+
+On the 26 messages the Python service scored in advance, the browser gave the same band on all 26 and the same plausible range on 25. P(level 4+) differed by 0.018 on average (at most 0.098), because the encoders are int8. The single most likely level matched on 22. The four that differ have a nearly flat distribution around the 0.5 cut, where the point level is unstable anyway.
 
 ## Run it locally
 
