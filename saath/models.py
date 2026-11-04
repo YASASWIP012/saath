@@ -136,6 +136,33 @@ class Ensemble:
         return np.tensordot(w / w.sum(), stack, axes=1)
 
 
+class Routed:
+    """English ensemble for most messages, a separate model for romanised Hindi/Telugu.
+
+    The language detector decides which model scores each message. Both are
+    trained on the same posts; only their features differ.
+    """
+
+    def __init__(self, base, alt):
+        self.base = base
+        self.alt = alt
+
+    def fit(self, texts, y, **kw):
+        self.base.fit(texts, y, **kw)
+        self.alt.fit(texts, y, **kw)
+        return self
+
+    def exceed_proba(self, texts):
+        from .language import is_romanised_indic
+
+        texts = list(texts)
+        out = self.base.exceed_proba(texts)
+        mask = np.array([is_romanised_indic(t) for t in texts])
+        if mask.any():
+            out[mask] = self.alt.exceed_proba([t for t, m in zip(texts, mask, strict=True) if m])
+        return out
+
+
 # A transparent baseline any helpline could write in an afternoon. Patterns are
 # grouped by the C-SSRS level they most directly signal.
 _KEYWORDS = [

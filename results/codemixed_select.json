@@ -1,0 +1,49 @@
+{
+  "split": "even rows of data/stress/codemixed.csv for choosing, odd rows held out and scored once",
+  "rule": "highest dev AUROC among candidates within 0.01 English \u03ba of the base model",
+  "candidates": {
+    "base": {
+      "english_qwk": 0.8139588897921264,
+      "english_auroc": 0.9560904578047436,
+      "dev_qwk": -0.02279202279202286,
+      "dev_auroc": 0.6822916666666667
+    },
+    "+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2": {
+      "english_qwk": 0.8089300862232567,
+      "english_auroc": 0.951130722559294,
+      "dev_qwk": -0.02279202279202286,
+      "dev_auroc": 0.7239583333333334
+    },
+    "route:sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2": {
+      "english_qwk": 0.8139588897921264,
+      "english_auroc": 0.9560904578047436,
+      "dev_qwk": 0.011494252873563426,
+      "dev_auroc": 0.6145833333333334
+    },
+    "+sentence-transformers/LaBSE": {
+      "english_qwk": 0.8085730954929461,
+      "english_auroc": 0.9594351902923333,
+      "dev_qwk": 0.005780346820809412,
+      "dev_auroc": 0.6875
+    },
+    "route:sentence-transformers/LaBSE": {
+      "english_qwk": 0.8139588897921264,
+      "english_auroc": 0.9560904578047436,
+      "dev_qwk": 0.028901734104046395,
+      "dev_auroc": 0.640625
+    }
+  },
+  "picked": "+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+  "test": {
+    "base": {
+      "qwk": -0.011235955056179803,
+      "auroc": 0.8072916666666665,
+      "n": 28
+    },
+    "+sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2": {
+      "qwk": -0.011235955056179803,
+      "auroc": 0.765625,
+      "n": 28
+    }
+  }
+}
