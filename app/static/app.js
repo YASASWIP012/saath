@@ -87,8 +87,11 @@ let timer = null;
 let nextIdx = 0;
 let served = { high: 0, highWaitSum: 0 };
 let selected = null;
+let pinCount = 0;
 
 function priority(item) {
+  // A counsellor's manual move beats any automatic order.
+  if (item.pinned !== undefined) return 1e6 - item.pinned;
   if (order === "fifo") return -item.arrived;
   // Same rule as the replay: risk percentile plus waiting time. Messages the
   // model cannot read well are never sorted below the middle of the queue.
@@ -107,6 +110,7 @@ function renderQueue() {
       <div class="row"><span class="who">${escapeHtml(it.name)}</span><span class="chip ${it.score.band}">${bandLabel(it.score.band, it.score.band_reason)}</span></div>
       <p class="snip">${escapeHtml(it.text)}</p>
       <div class="row"><span class="wait">waiting ${Math.round(clock - it.arrived)} min</span><span class="wait">level ${it.score.level_range[0]}–${it.score.level_range[1]}</span></div>
+      ${selected === it.id && it.pinned === undefined ? `<button class="pin" data-pin="${it.id}">Move to top</button>` : ""}${it.pinned !== undefined ? `<span class="wait">moved to top by counsellor</span>` : ""}
     </li>`).join("") || `<li class="muted">Queue is empty.</li>`;
   queue.forEach((it) => (it.fresh = false));
   [...list.children].forEach((li) => {
@@ -116,6 +120,11 @@ function renderQueue() {
     if (dy) li.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: 350, easing: "ease-out" });
   });
   list.querySelectorAll(".card").forEach((li) => li.addEventListener("click", () => select(li.dataset.id)));
+  list.querySelectorAll(".pin").forEach((btn) => btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const it = queue.find((q) => q.id === btn.dataset.pin);
+    if (it) { it.pinned = pinCount++; renderQueue(); }
+  }));
   const waitingHigh = queue.filter((q) => q.score.band === "urgent");
   const longest = waitingHigh.length ? Math.max(...waitingHigh.map((q) => clock - q.arrived)) : 0;
   $("#stats").innerHTML = `

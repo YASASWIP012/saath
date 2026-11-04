@@ -143,7 +143,7 @@ Every number above comes from Reddit posts and a simulated queue. A helpline wou
 
 1. Shadow mode for about four weeks. Saath scores every incoming chat and reorders nothing. Counsellors keep answering in arrival order and record the C-SSRS level they judged after each chat, which gives the helpline its own labelled set.
 2. Re-calibrate and check. Refit the urgent and critical cut-offs on those labels with `saath/conformal.py`, then test them on a later month they never saw. The urgent band should miss at most 5% of high-risk chats there. Then replay the helpline's own arrival and abandonment logs to confirm that fewer high-risk chats are lost than in arrival order. `saath/queue_sim.py` draws arrivals from a Poisson process today, so this step needs a small loader for real logs.
-3. Go live for part of each shift, with a way for counsellors to move any chat to the top and to switch the queue back to arrival order. The console has neither control yet. Code-mixed chats keep going to review until there is labelled code-mixed text to retrain on.
+3. Go live for part of each shift. The console already has the two controls this needs: a counsellor can move any selected chat to the top, and one toggle returns the whole queue to arrival order. Code-mixed chats keep going to review until there is labelled code-mixed text to retrain on.
 
 ## Limitations and responsible use
 

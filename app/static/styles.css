@@ -152,3 +152,5 @@ footer { border-top: 1px solid var(--line); padding: 16px 24px; font-size: 13px;
   .stats { margin-left: 0; }
   .lane .count { font-size: 32px; }
 }
+
+.card .pin { margin-top: 8px; font: inherit; font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer; }
