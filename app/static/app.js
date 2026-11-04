@@ -13,7 +13,58 @@ async function staticApi(path, body) {
     if (!(t in STATIC_SCORES)) throw new Error("static");
     return STATIC_SCORES[t];
   };
+  if (!path.endsWith("batch") && !(body.text in STATIC_SCORES)) return browserScore(body.text);
   return path.endsWith("batch") ? body.texts.map(one) : one(body.text);
+}
+
+// New text on the hosted copy is scored here by the TF-IDF member of the
+// ensemble, reproducing scikit-learn's word and char_wb n-grams.
+let TFIDF = null;
+function wordGrams(text, [lo, hi]) {
+  const toks = text.toLowerCase().match(/[\p{L}\p{N}_]{2,}/gu) || [];
+  const out = [];
+  for (let n = lo; n <= hi; n++) for (let i = 0; i + n <= toks.length; i++) out.push(toks.slice(i, i + n).join(" "));
+  return out;
+}
+function charGrams(text, [lo, hi]) {
+  const out = [];
+  for (const raw of text.toLowerCase().replace(/\s\s+/g, " ").split(/\s+/).filter(Boolean)) {
+    const w = Array.from(` ${raw} `);
+    for (let n = lo; n <= hi; n++) {
+      let off = 0;
+      out.push(w.slice(off, off + n).join(""));
+      while (off + n < w.length) { off++; out.push(w.slice(off, off + n).join("")); }
+    }
+  }
+  return out;
+}
+async function browserScore(text) {
+  if (!TFIDF) {
+    TFIDF = await (await fetch("data/tfidf.json")).json();
+    TFIDF.blocks.forEach((b) => (b.index = new Map(b.vocab.map((v, i) => [v, i]))));
+  }
+  const feats = new Map();
+  let offset = 0;
+  for (const b of TFIDF.blocks) {
+    const grams = b.analyzer === "word" ? wordGrams(text, b.ngram) : charGrams(text, b.ngram);
+    const tf = new Map();
+    for (const g of grams) if (b.index.has(g)) { const j = b.index.get(g); tf.set(j, (tf.get(j) || 0) + 1); }
+    let norm = 0;
+    const vals = [...tf].map(([j, c]) => { const v = (1 + Math.log(c)) * b.idf[j]; norm += v * v; return [j, v]; });
+    norm = Math.sqrt(norm) || 1;
+    for (const [j, v] of vals) feats.set(offset + j, v / norm);
+    offset += b.vocab.length;
+  }
+  let exceed = TFIDF.heads.map((h) => {
+    let z = h.b;
+    for (const [j, v] of feats) z += h.coef[j] * v;
+    return 1 / (1 + Math.exp(-z));
+  });
+  for (let k = 1; k < exceed.length; k++) exceed[k] = Math.min(exceed[k], exceed[k - 1]);
+  const words = text.toLowerCase().match(/[a-z']+/g) || [];
+  const indic = new Set(TFIDF.indic);
+  const share = words.length ? words.filter((w) => indic.has(w)).length / words.length : 0;
+  return { browser: true, exceed, level: exceed.filter((p) => p > 0.5).length, risk: exceed[HIGH - 1], indic: share >= 0.15 };
 }
 
 async function api(path, body) {
@@ -219,6 +270,16 @@ $("#try-form").addEventListener("submit", async (e) => {
   try { s = await api("/api/score", { text }); } catch (err) {
     if (!window.SAATH_STATIC) throw err;
     $("#try-result").innerHTML = `<p class="muted">This hosted copy is static, so it can only show messages scored in advance. Pick one of the examples, or run Saath locally (see the README) to score your own text.</p>`;
+    return;
+  }
+  if (s.browser) {
+    const lvl = META.levels[s.level] ?? s.level;
+    $("#try-result").innerHTML = `
+      <h3>Your message</h3>
+      <p><b>Level ${s.level}</b> · ${escapeHtml(String(lvl))}</p>
+      <p>Chance of level 4 or above (intent, plan or act): <b>${Math.round(s.risk * 100)}%</b></p>
+      ${s.indic ? `<p><b>Romanised Hindi or Telugu detected.</b> The full service sends this to a counsellor for review instead of trusting the score.</p>` : ""}
+      <p class="muted">Scored in your browser by the TF-IDF part of Saath only. On its own it agrees with the annotators less well than the full ensemble (κ about 0.70 against 0.81), and it gives no plausible range, urgent band or highlighted evidence. Run Saath locally for the full model.</p>`;
     return;
   }
   renderDetail($("#try-result"), s, META, "Your message", text);

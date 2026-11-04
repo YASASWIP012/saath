@@ -31,6 +31,27 @@ EXAMPLES = [
 ]
 
 
+def export_tfidf(data, texts):
+    """The TF-IDF member of the deployed ensemble, for scoring new text in the browser."""
+    import joblib
+    import numpy as np
+
+    from saath import language
+
+    model = joblib.load(ROOT / "artifacts" / "model.joblib")
+    tf = next(m for m in model.members if type(m).__name__ == "TfidfOrdinal")
+    blocks = []
+    for _, v in tf.vec_.transformer_list:
+        vocab = sorted(v.vocabulary_, key=v.vocabulary_.get)
+        blocks.append({"analyzer": v.analyzer, "ngram": list(v.ngram_range), "vocab": vocab,
+                       "idf": [round(float(x), 5) for x in v.idf_]})
+    heads = [{"coef": [round(float(x), 5) for x in h.coef_[0]], "b": float(h.intercept_[0])} for h in tf.heads_]
+    words = sorted(language.HINDI | language.TELUGU)
+    ref = {t: [float(x) for x in row] for t, row in zip(texts, tf.exceed_proba(texts))}
+    (data / "tfidf.json").write_text(json.dumps({"blocks": blocks, "heads": heads, "indic": words, "ref": ref}))
+    print("tfidf export", sum(len(b["vocab"]) for b in blocks), "features;", np.round(next(iter(ref.values())), 3))
+
+
 def main():
     out = Path(sys.argv[1])
     data = out / "data"
@@ -43,6 +64,7 @@ def main():
         texts = list(dict.fromkeys([d["text"] for d in demo] + EXAMPLES))
         scores = {t: c.post("/api/score", json={"text": t}).json() for t in texts}
     (data / "scores.json").write_text(json.dumps(scores))
+    export_tfidf(data, texts)
     (data / "examples.json").write_text(json.dumps(EXAMPLES))
 
     static = ROOT / "app" / "static"
