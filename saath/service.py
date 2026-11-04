@@ -26,6 +26,9 @@ class Calibration:
     # score; this only makes the percentage shown to a counsellor honest.
     risk_x: list | None = None
     risk_y: list | None = None
+    # Raw-risk percentiles of the calibration posts. The queue sorts on a
+    # message's percentile, exactly as the replay does.
+    risk_quantiles: list | None = None
 
     @classmethod
     def fit(cls, exceed, level, alpha_urgent=0.05, alpha_level=0.1):
@@ -42,7 +45,13 @@ class Calibration:
             alpha_level,
             [float(v) for v in iso.X_thresholds_],
             [float(v) for v in iso.y_thresholds_],
+            [float(v) for v in np.quantile(raw, np.linspace(0, 1, 101))],
         )
+
+    def priority(self, raw):
+        if not self.risk_quantiles:
+            return np.asarray(raw, dtype=float)
+        return np.interp(raw, self.risk_quantiles, np.linspace(0, 1, 101))
 
     def calibrated(self, raw):
         if not self.risk_x:
@@ -104,6 +113,7 @@ class Scorer:
             "proba": [round(float(p), 4) for p in proba],
             "risk": round(risk, 4),
             "risk_calibrated": round(float(self.cal.calibrated(risk)), 4),
+            "priority": round(float(self.cal.priority(risk)), 4),
             "band": band,
             "band_reason": reason,
             "evidence": evidence.explain(self.model, text) if explain else [],
@@ -128,6 +138,7 @@ class Scorer:
                     "level_range": [lo, hi],
                     "risk": round(float(risk[i]), 4),
                     "risk_calibrated": round(float(self.cal.calibrated(risk[i])), 4),
+                    "priority": round(float(self.cal.priority(risk[i])), 4),
                     "band": band,
                     "band_reason": reason,
                 }

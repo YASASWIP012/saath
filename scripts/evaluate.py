@@ -145,10 +145,10 @@ def main():
     # Queue replay: everyone draws from the same pool of held-out posts.
     policies = {
         "First come": None,
-        "Keyword": models.predict_level(kw) / 6,
-        "Saath": ours_risk,
-        "Frontier LLM": llm[:, best] / 6,
-        "Oracle": (y >= data.HIGH_RISK).astype(float),
+        "Keyword": queue_sim.rank01(models.predict_level(kw)),
+        "Saath": queue_sim.rank01(ours_risk),
+        "Frontier LLM": queue_sim.rank01(llm[:, best]),
+        "Oracle": queue_sim.rank01(y >= data.HIGH_RISK),
     }
     loads = [0.8, 0.9, 1.0, 1.1, 1.25, 1.5]
     series, paired = queue_report(y, policies, loads, seeds=range(args.seeds))
@@ -163,20 +163,21 @@ def main():
         iso = IsotonicRegression(out_of_bounds="clip", y_min=0, y_max=1).fit(ours_risk[cal_idx], hr[cal_idx])
         shown[te] = iso.predict(ours_risk[te])
 
-    # One concrete night for the console's side-by-side replay: the seed whose
-    # first-come vs Saath gap is closest to the average gap, so it is typical.
+    # One concrete night for the console's side-by-side replay. We pick it,
+    # so it is a selected example: the seed whose first-come vs Saath gap is
+    # closest to the average gap over 100 seeds.
     scn = queue_sim.Scenario(load=1.1)
     gaps = []
     for seed in range(100):
         f = queue_sim.outcomes(queue_sim.replay(None, y, scn, seed))["hr_abandon"]
-        g = queue_sim.outcomes(queue_sim.replay(ours_risk, y, scn, seed))["hr_abandon"]
+        g = queue_sim.outcomes(queue_sim.replay(queue_sim.rank01(ours_risk), y, scn, seed))["hr_abandon"]
         gaps.append(f - g)
     typical = int(np.argmin(np.abs(np.array(gaps) - np.mean(gaps))))
     night = {
         "seed": typical,
         "scenario": scn.__dict__,
         "fifo": queue_sim.timeline(queue_sim.replay(None, y, scn, typical), scn.hours * 60),
-        "saath": queue_sim.timeline(queue_sim.replay(ours_risk, y, scn, typical), scn.hours * 60),
+        "saath": queue_sim.timeline(queue_sim.replay(queue_sim.rank01(ours_risk), y, scn, typical), scn.hours * 60),
     }
 
     report = {

@@ -1,4 +1,4 @@
-# Demo video narration (about 80 seconds)
+# Demo video narration (about 90 seconds)
 
 **Scene 1. A queue in arrival order (0:00 to 0:12)**
 On a busy night, a crisis text line answers people in the order they arrive. Someone who has just taken pills can end up waiting behind someone asking for clinic timings, and some people give up before anyone replies.

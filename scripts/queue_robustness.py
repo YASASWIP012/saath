@@ -38,10 +38,10 @@ BASE = queue_sim.Scenario(load=1.1)
 def policies(y, ours, kw, llm):
     return {
         "First come": None,
-        "Keyword": models.predict_level(kw) / 6,
-        "Saath": models.risk_score(ours),
-        "Frontier LLM": llm / 6,
-        "Oracle": (y >= data.HIGH_RISK).astype(float),
+        "Keyword": queue_sim.rank01(models.predict_level(kw)),
+        "Saath": queue_sim.rank01(models.risk_score(ours)),
+        "Frontier LLM": queue_sim.rank01(llm),
+        "Oracle": queue_sim.rank01(y >= data.HIGH_RISK),
     }
 
 

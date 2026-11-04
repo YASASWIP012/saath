@@ -87,8 +87,11 @@ let selected = null;
 
 function priority(item) {
   if (order === "fifo") return -item.arrived;
-  const floor = item.score.band === "review" ? 0.3 : 0;
-  return Math.max(item.score.risk, floor) + (clock - item.arrived) / 45;
+  // Same rule as the replay: risk percentile plus waiting time. Messages the
+  // model cannot read well are never sorted below the middle of the queue.
+  const p = item.score.priority ?? item.score.risk;
+  const floor = item.score.band === "review" ? 0.5 : 0;
+  return Math.max(p, floor) + (clock - item.arrived) / 45;
 }
 
 function renderQueue() {

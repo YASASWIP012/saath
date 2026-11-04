@@ -6,7 +6,7 @@ Saath sorts the waiting queue of a crisis text line by suicide risk, so the peop
 
 - Team: Yasaswi Paruchuri (solo)
 - Live demo: DEMO_URL
-- Demo video (86 seconds): [video/saath_demo.mp4](video/saath_demo.mp4)
+- Demo video (92 seconds): [video/saath_demo.mp4](video/saath_demo.mp4)
 
 ![The Saath live queue](docs/queue.png)
 
@@ -21,16 +21,20 @@ At 1.1× load, meaning 10% more conversations arrive than the counsellors can ha
 | Queue order | High-risk texters who give up before anyone answers |
 |---|---|
 | First come, first served | 22.0% |
-| Keyword rules | 17.3% |
-| Saath | 15.7% |
-| Frontier LLM labels | 15.2% |
-| Perfect knowledge of the true level | 14.4% |
+| Keyword rules | 17.7% |
+| Frontier LLM labels | 15.6% |
+| Saath | 15.3% |
+| Perfect knowledge of the true level | 14.5% |
 
-Saath loses 29% fewer high-risk people than first-come order, which is 83% of the improvement a perfect oracle would get. The interval that matters here is over posts, not over simulation runs, because only 245 of the 1,170 posts are high risk. Resampling the posts 200 times and re-running the replay on each resample gives a reduction of 28% (95% CI 21% to 36%). Saath beat first-come order in every resample and keyword rules in 97% of them. Against the frontier LLM ordering the difference was 0.5 points in the LLMs' favour (95% CI from 1.8 points for the LLMs to 0.9 points for Saath), so the two are not distinguishable at this sample size.
+Saath loses 31% fewer high-risk people than first-come order, which is 90% of the improvement a perfect oracle would get. At 1.5× load it is 35% fewer (35.6% to 23.3%). Every ordering is put on the same scale before it meets the queue (its percentile rank among the posts), so a probability, a 0 to 6 level and a yes/no label all trade off against waiting time in the same way. The deployed console sorts by the same rule.
 
-Low-risk texters pay for this. Their give-up rate rises from 22.3% to 24.2%, while the total share of people who give up stays the same (22.3% against 22.4%). Saath changes who waits, and the queue as a whole is no longer than before.
+The interval that matters is over posts, not over simulation runs, because only 245 of the 1,170 posts are high risk. Resampling the posts 200 times and re-running the replay on each resample gives a reduction of 28% (95% CI 21% to 35%). Saath beat first-come order in every resample and keyword rules in 96% of them (1.6 points, 95% CI −0.2 to 3.3). Against the frontier LLM ordering the difference was 0.1 points (95% CI −1.5 to 1.5): the local model matches it. These intervals hold the out-of-fold scores fixed, so they do not include the noise of retraining the model.
 
-The benefit does not depend on one convenient setting. Moving one assumption at a time (high-risk prevalence from 5% to 21%, high-risk texters half or twice as patient as others, the aging weight from 15 minutes to none, 2 to 8 counsellors, mean patience from 10 to 40 minutes), the reduction stayed between 17% and 44% and Saath kept 65% to 92% of the oracle's gain. It is smallest when the queue is very short-staffed (2 counsellors, 17%) and when waiting time is weighted heavily (15-minute aging, 21%). The full grid is in `results/queue_robustness.json`.
+Low-risk texters pay for this. Their give-up rate rises from 22.3% to 24.1%, while the total share of people who give up stays at 22.3%. Saath changes who waits, and the queue as a whole is no longer than before.
+
+The benefit does not depend on one convenient setting. We moved one assumption at a time: high-risk prevalence from 5% to 21%, high-risk texters half or twice as patient as everyone else, the aging weight from 15 minutes to none, 2 to 8 counsellors, and mean patience from 10 to 40 minutes. The reduction stayed between 17% and 45% across all 16 settings, and Saath kept 74% to 92% of the oracle's gain. It is smallest when the line is badly short-staffed (2 counsellors, 17%), when everyone is impatient (10-minute mean patience, 19%) and when waiting time is weighted heavily (15-minute aging, 21%). The full grid is in `results/queue_robustness.json`.
+
+The Evidence tab replays one night in both orders (8 high-risk texters lost first-come, 6 with Saath, out of 29). That night is a selected example: of 100 simulated nights, it is the one whose gap is closest to the average gap.
 
 ## Problem
 
@@ -91,7 +95,7 @@ The dataset authors collected the LLM labels from five large reasoning models pr
 
 Why not just call an LLM? A crisis line's transcripts are some of the most sensitive data any service holds. Sending each one to an outside API means a data-processing agreement, a cross-border transfer review and a dependency that can rate-limit or go down on the worst night of the year. Saath gives up 0.07 κ on the exact level to avoid all of that, and loses nothing measurable in the queue.
 
-Each encoder on its own reaches about 0.75 κ (e5 0.753, mpnet 0.746), and the ensemble adds 0.06. A third encoder, bge-base, scored 0.721 alone and was left out. Without nesting, the same configuration scored 0.813, so tuning on the test folds had inflated the estimate by only 0.003.
+Each encoder on its own reaches about 0.75 κ (e5 0.753, mpnet 0.746), and the ensemble adds 0.06. A third encoder, bge-base, scored 0.721 alone and was left out. Only C is nested. The choice of encoders, the TF-IDF setting and the decision to drop distillation were made by looking at the same five folds (seed 0), so treat the 0.810 as slightly optimistic. For scale, nesting C moved the estimate by 0.003.
 
 We also tried distilling the five LLM labels into the training targets as soft labels, at weights 0.3 and 0.5. Ranking did not change (AUROC 0.956 against 0.955), and the model began over-calling high risk the way the LLMs do, so we kept the plain version.
 
@@ -121,7 +125,7 @@ Code-mixed messages. Many Indian texters write Hindi or Telugu in Latin script, 
 | AUROC, level 4+ | 0.72 (Hinglish 0.61, Telugu-English 0.93) |
 | High-risk messages placed in the urgent band | 12 of 24 (50%) |
 | High-risk messages kept out of the standard band, with the language check | 24 of 24 |
-| Messages the language check recognised as romanised Hindi or Telugu | 51 of 56 |
+| Messages the language check recognised as romanised Hindi or Telugu (word list written after seeing them, so this is a development number) | 51 of 56 |
 | English posts it wrongly flagged | 0 of 1,170 |
 
 A planned fix, adding a multilingual encoder (LaBSE or L3Cube's Indic SBERT) chosen on half of these messages and tested on the other half, did not fit in the 48 hours. Because of this result, the service will not put a romanised Hindi or Telugu message in the standard band; it sends those messages to review for a counsellor to read. The detector's word list was written after we saw these messages, so its 51 of 56 is optimistic. The five it missed are in `results/codemixed.json`. A real fix needs labelled code-mixed training data, which we did not have.

@@ -33,6 +33,18 @@ class Scenario:
     hr_patience: float = 1.0
 
 
+def rank01(score) -> np.ndarray:
+    """Percentile rank in [0, 1], ties sharing their average rank.
+
+    Every ordering is compared on this scale, so a probability, a 0-6 level
+    and a yes/no label all trade off against waiting time the same way.
+    """
+    from scipy.stats import rankdata
+
+    score = np.asarray(score, dtype=float)
+    return (rankdata(score) - 1) / max(len(score) - 1, 1)
+
+
 def _draws(scn: Scenario, n_pool: int, rng):
     rate = scn.load * scn.counsellors / scn.mean_service
     horizon = scn.hours * 60

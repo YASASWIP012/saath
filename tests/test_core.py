@@ -115,3 +115,19 @@ def test_risk_dependent_patience_changes_only_high_risk_texters():
     impatient = queue_sim.replay(None, level, queue_sim.Scenario(hours=4, hr_patience=0.25), seed=5)
     hr = base["level"] >= HIGH_RISK
     assert impatient["abandoned"][hr].mean() >= base["abandoned"][hr].mean()
+
+
+def test_published_guarantees_hold_on_the_real_held_out_folds():
+    """Fails if a re-run of scripts/nested.py breaks a promise made in the README."""
+    import json
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parent.parent / "results" / "conformal.json"
+    if not path.exists():
+        pytest.skip("run scripts/nested.py first")
+    c = json.loads(path.read_text())
+    n = c["urgent"]["n_high_risk"]
+    # Allow one binomial standard error of slack for a finite test set.
+    slack = (0.05 * 0.95 / n) ** 0.5
+    assert c["urgent"]["miss_rate"] <= c["urgent"]["alpha"] + slack
+    assert c["level_sets"]["coverage"] >= 1 - c["level_sets"]["alpha"] - 0.02
