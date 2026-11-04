@@ -94,6 +94,7 @@ main { padding: 20px 24px 40px; max-width: 1280px; margin: 0 auto; }
 
 .chip { font-size: 11px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; }
 .chip.urgent { color: var(--urgent); background: var(--urgent-bg); }
+.card.critical { border-left-width: 6px; }
 .chip.review { color: var(--review); background: var(--review-bg); }
 .chip.routine { color: var(--routine); background: var(--routine-bg); }
 

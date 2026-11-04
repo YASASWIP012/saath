@@ -11,6 +11,12 @@
     "precision": 0.4332129963898917,
     "n_high_risk": 245
   },
+  "critical": {
+    "alpha": 0.5,
+    "miss_rate": 0.4897959183673469,
+    "share": 0.11623931623931624,
+    "precision": 0.9191176470588235
+  },
   "level_sets": {
     "alpha": 0.1,
     "coverage": 0.9,

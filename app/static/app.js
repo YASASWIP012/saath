@@ -24,6 +24,7 @@ function escapeHtml(s) {
 
 function bandLabel(band, reason) {
   if (band === "review" && reason === "language") return "Review · language";
+  if (band === "urgent" && reason === "critical") return "Critical";
   return { urgent: "Urgent", review: "Review", routine: "Standard" }[band];
 }
 
@@ -32,7 +33,9 @@ function reasons(s, meta) {
   const out = [];
   const pct = Math.round((s.risk_calibrated ?? s.risk) * 100);
   out.push(`Chance this message is at level 4 or above (intent, plan or act): <b>${pct}%</b>.`);
-  if (s.band === "urgent") {
+  if (s.band === "urgent" && s.band_reason === "critical") {
+    out.push(`Critical: in testing, 92% of messages scored this high were truly at level 4 or above. About one message in eight lands here.`);
+  } else if (s.band === "urgent") {
     out.push(`That clears the urgent cut-off. The cut-off is set so that at most
       ${Math.round(meta.alpha_urgent * 100)}% of genuinely high-risk messages fall below it.`);
   } else if (s.band === "review" && s.band_reason === "language") {
@@ -100,7 +103,7 @@ function renderQueue() {
   // FLIP: remember positions, re-render, animate from old to new.
   const before = new Map([...list.children].map((li) => [li.dataset.id, li.getBoundingClientRect().top]));
   list.innerHTML = sorted.map((it) => `
-    <li class="card ${it.score.band} ${it.fresh ? "new" : ""} ${selected === it.id ? "sel" : ""}" data-id="${it.id}">
+    <li class="card ${it.score.band} ${it.score.band_reason === "critical" ? "critical" : ""} ${it.fresh ? "new" : ""} ${selected === it.id ? "sel" : ""}" data-id="${it.id}">
       <div class="row"><span class="who">${escapeHtml(it.name)}</span><span class="chip ${it.score.band}">${bandLabel(it.score.band, it.score.band_reason)}</span></div>
       <p class="snip">${escapeHtml(it.text)}</p>
       <div class="row"><span class="wait">waiting ${Math.round(clock - it.arrived)} min</span><span class="wait">level ${it.score.level_range[0]}–${it.score.level_range[1]}</span></div>

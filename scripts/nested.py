@@ -60,6 +60,7 @@ def main():
     texts, y = df.text.tolist(), df.level.to_numpy()
     oof = np.zeros((len(y), data.N_LEVELS - 1))
     urgent = np.zeros(len(y), dtype=bool)
+    critical = np.zeros(len(y), dtype=bool)
     sets = np.zeros((len(y), 2), dtype=int)
     sets_lv = np.zeros((len(y), 2), dtype=int)
     chosen = []
@@ -77,6 +78,8 @@ def main():
         ex_te = model.exceed_proba([texts[i] for i in te])
         u = conformal.UrgentThreshold(0.05).fit(models.risk_score(ex_cal), y[cal])
         urgent[te] = u.urgent(models.risk_score(ex_te))
+        crit = conformal.UrgentThreshold(0.5).fit(models.risk_score(ex_cal), y[cal])
+        critical[te] = crit.urgent(models.risk_score(ex_te))
         ls = conformal.LevelSets(0.1).fit(models.to_level_proba(ex_cal), y[cal])
         sets[te] = ls.predict(models.to_level_proba(ex_te))
         lsm = conformal.LevelSets(0.1, by_level=True).fit(models.to_level_proba(ex_cal), y[cal])
@@ -104,6 +107,12 @@ def main():
             "urgent_share": float(urgent.mean()),
             "precision": float(hr[urgent].mean()),
             "n_high_risk": int(hr.sum()),
+        },
+        "critical": {
+            "alpha": 0.5,
+            "miss_rate": float((~critical[hr]).mean()),
+            "share": float(critical.mean()),
+            "precision": float(hr[critical].mean()),
         },
         "level_sets": {
             "alpha": 0.1,

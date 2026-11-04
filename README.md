@@ -44,7 +44,7 @@ Counsellors already triage by hand when they have time to skim the queue. Saath 
 
 ## What a counsellor sees
 
-The live queue reorders itself as messages arrive. Each card shows a band (urgent, review or standard), the plausible severity range and how long the person has been waiting. Waiting time adds to priority, so nobody is left at the bottom indefinitely.
+The live queue reorders itself as messages arrive. Each card shows a band (critical, urgent, review or standard), the plausible severity range and how long the person has been waiting. Waiting time adds to priority, so nobody is left at the bottom indefinitely.
 
 Opening a card shows why it sits where it does. The sentences that moved the score most are highlighted, next to the chance that the message is at level 4 or above, the distribution over all seven levels and a plain-language reason.
 
@@ -104,6 +104,7 @@ We also tried distilling the five LLM labels into the training targets as soft l
 | | Promised | Observed |
 |---|---|---|
 | High-risk messages that miss the urgent band | at most 5% | 2.0% [0.4, 4.1] of 245 |
+| High-risk messages that miss the critical tier | at most 50% | 49%; the tier is 11.6% of messages at 92% precision |
 | True level inside the plausible range | at least 90% on average | 90.0% |
 | Mean width of the range | | 2.5 levels; 32% are a single level |
 | Per-level ranges (Mondrian variant): true level inside, worst level | at least 90% at every level, in expectation | 89% at level 0 (within sampling error of 351 posts); 94.1% overall |
@@ -111,7 +112,7 @@ We also tried distilling the five LLM labels into the training targets as soft l
 
 The plain range is honest on average but uneven by level: 76%, 76% and 72% for levels 3, 4 and 5, against 90 to 94% elsewhere. Calibrating one cut-off per level fixes that, with every level at 89% or more, but the ranges grow to 4.7 of 7 levels, which tells a counsellor little. The console shows the plain range, and the per-level version is one flag away (`LevelSets(by_level=True)`).
 
-The urgent band is wide. It holds 47% of messages, and 43% of those are truly high risk. That is the cost of promising to miss at most one high-risk person in twenty with a calibration set of about 50 high-risk posts per fold. Ranking inside the band still puts the clearest cases first, which is what the queue result measures.
+The urgent band is wide. It holds 47% of messages, and 43% of those are truly high risk. That is the cost of promising to miss at most one high-risk person in twenty with a calibration set of about 50 high-risk posts per fold. So the band has a sharper tier inside it. A second conformal cut-off, set to catch at least half of high-risk messages, marks 11.6% of messages as critical, and 92% of those are truly at level 4 or above (it caught 51% of them in testing). A counsellor can trust a critical card on sight and still knows the wider urgent band will catch 98% of high-risk messages.
 
 The raw risk probability is over-confident (ECE 0.120) because the heads use balanced class weights. A cross-fitted isotonic map brings this to 0.021, and that recalibrated number is the one a counsellor sees. The ranking and both guarantees use the raw score, which an isotonic map cannot reorder.
 
