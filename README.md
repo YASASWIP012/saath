@@ -16,7 +16,7 @@ To try it in a minute: open the live demo and press **Start a shift**. Click a c
 
 ## Result
 
-In short: in a simulated busy shift, 22% of high-risk texters give up waiting when the line answers in arrival order. With Saath ordering the queue, 15% do, close to the 14.5% that perfect knowledge of every texter's risk would give. Saath runs on a laptop CPU and matches the ordering from frontier LLM labels. The catch is that all of this comes from Reddit posts and a simulated queue, not a real helpline (see [From Reddit to a real helpline](#from-reddit-to-a-real-helpline)).
+In short: in a simulated busy shift, 22% of high-risk texters give up waiting when the line answers in arrival order. With Saath ordering the queue, 15% do, close to the 14.5% that perfect knowledge of every texter's risk would give. Saath runs on a laptop CPU, and its queue result was within about a point of the ordering from frontier LLM labels (95% CI −1.5 to 1.5 points), so this test cannot tell the two apart. The catch is that all of this comes from Reddit posts and a simulated queue, not a real helpline (see [From Reddit to a real helpline](#from-reddit-to-a-real-helpline)).
 
 We replayed a busy helpline shift 300 times. In each replay every ordering saw the same arrivals, the same conversation lengths and the same patience, so the only thing that changed was the order of the queue.
 
@@ -32,7 +32,7 @@ At 1.1× load, meaning 10% more conversations arrive than the counsellors can ha
 
 Saath loses 31% fewer high-risk people than first-come order, which is 90% of the improvement a perfect oracle would get. At 1.5× load it is 35% fewer (35.6% to 23.3%).
 
-The interval that matters is over posts, not over simulation runs, because only 245 of the 1,170 posts are high risk. Resampling the posts 200 times and re-running the replay on each resample gives a reduction of 28% (95% CI 21% to 35%). Saath beat first-come order in every resample and keyword rules in 96% of them (1.6 points, 95% CI −0.2 to 3.3). Against the frontier LLM ordering the difference was 0.1 points (95% CI −1.5 to 1.5): the local model matches it. These intervals hold the out-of-fold scores fixed, so they do not include the noise of retraining the model.
+The interval that matters is over posts, not over simulation runs, because only 245 of the 1,170 posts are high risk. Resampling the posts 200 times and re-running the replay on each resample gives a reduction of 28% (95% CI 21% to 35%). Saath beat first-come order in every resample and keyword rules in 96% of them (1.6 points, 95% CI −0.2 to 3.3). Against the frontier LLM ordering the difference was 0.1 points (95% CI −1.5 to 1.5), so the test cannot separate the local model from the LLM labels in either direction. These intervals hold the out-of-fold scores fixed, so they do not include the noise of retraining the model.
 
 Low-risk texters pay for this. Their give-up rate rises from 22.3% to 24.1%, while the total share of people who give up stays at 22.3%. Saath changes who waits, and the queue as a whole is no longer than before.
 
