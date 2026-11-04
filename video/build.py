@@ -52,7 +52,7 @@ SCENES = [
     {
         "id": "evidence",
         "say": "Here is one typical night, replayed twice with the same arrivals. Over three hundred such nights, "
-        "twenty-two percent of high-risk texters gave up waiting in first-come order, and sixteen percent "
+        "twenty-two percent of high-risk texters gave up waiting in first-come order, and fifteen percent "
         "with Saath. The gain held when we changed staffing, patience and how common high-risk messages are. "
         "It runs on a laptop CPU, so no message ever leaves the helpline.",
     },

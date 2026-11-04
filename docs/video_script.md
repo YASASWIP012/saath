@@ -13,6 +13,6 @@ Counsellors can see the reasoning. The lines that drove the score are highlighte
 At most one in twenty high-risk messages may fall outside the urgent band. In testing, 2% did. Messages in romanised Hindi or Telugu, which the model still reads poorly, are never put in the standard queue.
 
 **Scene 5. The result (0:60 to 0:85)**
-Here is one typical night, replayed twice with the same arrivals. Over three hundred such nights, 22% of high-risk texters gave up waiting in first-come order, and 16% with Saath. The gain held when we changed staffing, patience and how common high-risk messages are. It runs on a laptop CPU, so no message ever leaves the helpline.
+Here is one typical night, replayed twice with the same arrivals. Over three hundred such nights, 22% of high-risk texters gave up waiting in first-come order, and 15% with Saath. The gain held when we changed staffing, patience and how common high-risk messages are. It runs on a laptop CPU, so no message ever leaves the helpline.
 
 If you or someone you know is struggling, in India you can call Tele-MANAS on 14416.
