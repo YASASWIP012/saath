@@ -52,6 +52,33 @@ def export_tfidf(data, texts):
     print("tfidf export", sum(len(b["vocab"]) for b in blocks), "features;", np.round(next(iter(ref.values())), 3))
 
 
+def export_full(data, texts):
+    """Heads of the two encoder members plus the calibration, so the browser
+    can run the whole ensemble once it has downloaded the encoders."""
+    import joblib
+
+    from saath.service import Calibration, Scorer
+
+    model = joblib.load(ROOT / "artifacts" / "model.joblib")
+    cal = Calibration.load(ROOT / "artifacts" / "calibration.json")
+    members = []
+    for m in model.members:
+        heads = [{"coef": [round(float(x), 6) for x in h.coef_[0]], "b": float(h.intercept_[0])} for h in m.heads_]
+        if type(m).__name__ == "EmbedOrdinal":
+            members.append({"kind": "embed", "model": m.model, "heads": heads})
+        else:
+            members.append({"kind": "tfidf"})
+    ref_texts = texts + [
+        "I can't do this anymore. I have the pills ready and I'm taking them tonight.",
+        "Feeling a bit low after the breakup but my friends are helping.",
+    ]
+    ref = Scorer(model, cal).score_many(ref_texts)
+    out = {"members": members, "weights": model.weights, "calibration": cal.__dict__,
+           "ref": dict(zip(ref_texts, ref))}
+    (data / "full.json").write_text(json.dumps(out))
+    print("full export", [m.get("model", "tfidf") for m in members])
+
+
 def main():
     out = Path(sys.argv[1])
     data = out / "data"
@@ -65,13 +92,14 @@ def main():
         scores = {t: c.post("/api/score", json={"text": t}).json() for t in texts}
     (data / "scores.json").write_text(json.dumps(scores))
     export_tfidf(data, texts)
+    export_full(data, texts)
     (data / "examples.json").write_text(json.dumps(EXAMPLES))
 
     static = ROOT / "app" / "static"
     html = (static / "index.html").read_text().replace('"/static/', '"')
     html = re.sub(r"(<script src=)", r"<script>window.SAATH_STATIC = true;</script>\n  \1", html, count=1)
     (out / "index.html").write_text(html)
-    for f in ["app.js", "styles.css"]:
+    for f in ["app.js", "full.js", "styles.css"]:
         shutil.copy(static / f, out / f)
     print(f"wrote {out} with {len(scores)} scored messages")
 

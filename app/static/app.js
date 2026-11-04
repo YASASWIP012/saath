@@ -38,7 +38,7 @@ function charGrams(text, [lo, hi]) {
   }
   return out;
 }
-async function browserScore(text) {
+async function browserScore(text, rawOnly = false) {
   if (!TFIDF) {
     TFIDF = await (await fetch("data/tfidf.json")).json();
     TFIDF.blocks.forEach((b) => (b.index = new Map(b.vocab.map((v, i) => [v, i]))));
@@ -55,11 +55,13 @@ async function browserScore(text) {
     for (const [j, v] of vals) feats.set(offset + j, v / norm);
     offset += b.vocab.length;
   }
-  let exceed = TFIDF.heads.map((h) => {
+  const raw = TFIDF.heads.map((h) => {
     let z = h.b;
     for (const [j, v] of feats) z += h.coef[j] * v;
     return 1 / (1 + Math.exp(-z));
   });
+  if (rawOnly) return raw;
+  const exceed = [...raw];
   for (let k = 1; k < exceed.length; k++) exceed[k] = Math.min(exceed[k], exceed[k - 1]);
   const words = text.toLowerCase().match(/[a-z']+/g) || [];
   const indic = new Set(TFIDF.indic);
@@ -259,8 +261,37 @@ document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("clic
   renderQueue();
 }));
 
+// ---------- full model in the browser (hosted copy only) ----------
+let FULL = null;
+const fullCtx = () => ({
+  tfidfRaw: (t) => browserScore(t, true),
+  isIndic: (t) => {
+    const words = t.toLowerCase().match(/[a-z']+/g) || [];
+    const set = new Set(TFIDF.indic);
+    return words.length > 0 && words.filter((w) => set.has(w)).length / words.length >= 0.15;
+  },
+  levels: META.levels,
+});
+async function loadFull(btn) {
+  btn.disabled = true;
+  const mod = await import("./full.js");
+  await browserScore("warm up", true);
+  await mod.load((f) => (btn.textContent = `Downloading the full model… ${Math.round(f * 100)}%`));
+  FULL = mod;
+  btn.textContent = "Full model loaded: typed text now uses the whole ensemble";
+  window.saathValidate = () => mod.validate(fullCtx());
+}
+
 // ---------- try a message ----------
 if (window.SAATH_STATIC) {
+  const fb = document.createElement("div");
+  fb.className = "examples";
+  fb.innerHTML = `<button type="button" id="load-full">Load the full model in this browser (about 390 MB, once)</button>
+    <p class="muted">Until then, typed text is scored by the TF-IDF member alone.</p>`;
+  $("#try-form").after(fb);
+  $("#load-full").addEventListener("click", (e) => loadFull(e.currentTarget).catch((err) => {
+    e.currentTarget.textContent = `Could not load the full model here (${err.message}). Typed text stays on TF-IDF.`;
+  }));
   fetch("data/examples.json").then((r) => r.json()).then((ex) => {
     const box = document.createElement("div");
     box.className = "examples";
@@ -279,6 +310,11 @@ $("#try-form").addEventListener("submit", async (e) => {
   if (!text) return;
   $("#try-result").innerHTML = `<p class="muted">Scoring…</p>`;
   let s;
+  if (FULL && window.SAATH_STATIC && !(STATIC_SCORES && text in STATIC_SCORES)) {
+    s = await FULL.score(text, fullCtx());
+    renderDetail($("#try-result"), s, META, "Your message (full model, in your browser)", text);
+    return;
+  }
   try { s = await api("/api/score", { text }); } catch (err) {
     if (!window.SAATH_STATIC) throw err;
     $("#try-result").innerHTML = `<p class="muted">This hosted copy is static, so it can only show messages scored in advance. Pick one of the examples, or run Saath locally (see the README) to score your own text.</p>`;
