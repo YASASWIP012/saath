@@ -19,7 +19,7 @@ from fastapi.testclient import TestClient
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from app.main import app  # noqa: E402
+from app.main import app
 
 EXAMPLES = [
     "I keep telling myself it will get better but I've started looking at the pills in the cupboard every night.",
