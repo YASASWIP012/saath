@@ -16,6 +16,8 @@ To try it in a minute: open the live demo and press **Start a shift**. Click a c
 
 ## Result
 
+In short: in a simulated busy shift, 22% of high-risk texters give up waiting when the line answers in arrival order. With Saath ordering the queue, 15% do, close to the 14.5% that perfect knowledge of every texter's risk would give. Saath runs on a laptop CPU and matches the ordering from frontier LLM labels. The catch is that all of this comes from Reddit posts and a simulated queue, not a real helpline (see [From Reddit to a real helpline](#from-reddit-to-a-real-helpline)).
+
 We replayed a busy helpline shift 300 times. In each replay every ordering saw the same arrivals, the same conversation lengths and the same patience, so the only thing that changed was the order of the queue.
 
 At 1.1× load, meaning 10% more conversations arrive than the counsellors can handle:
@@ -28,13 +30,15 @@ At 1.1× load, meaning 10% more conversations arrive than the counsellors can ha
 | Saath | 15.3% |
 | Perfect knowledge of the true level | 14.5% |
 
-Saath loses 31% fewer high-risk people than first-come order, which is 90% of the improvement a perfect oracle would get. At 1.5× load it is 35% fewer (35.6% to 23.3%). Every ordering is put on the same scale before it meets the queue (its percentile rank among the posts), so a probability, a 0 to 6 level and a yes/no label all trade off against waiting time in the same way. The deployed console sorts by the same rule.
+Saath loses 31% fewer high-risk people than first-come order, which is 90% of the improvement a perfect oracle would get. At 1.5× load it is 35% fewer (35.6% to 23.3%).
 
 The interval that matters is over posts, not over simulation runs, because only 245 of the 1,170 posts are high risk. Resampling the posts 200 times and re-running the replay on each resample gives a reduction of 28% (95% CI 21% to 35%). Saath beat first-come order in every resample and keyword rules in 96% of them (1.6 points, 95% CI −0.2 to 3.3). Against the frontier LLM ordering the difference was 0.1 points (95% CI −1.5 to 1.5): the local model matches it. These intervals hold the out-of-fold scores fixed, so they do not include the noise of retraining the model.
 
 Low-risk texters pay for this. Their give-up rate rises from 22.3% to 24.1%, while the total share of people who give up stays at 22.3%. Saath changes who waits, and the queue as a whole is no longer than before.
 
 The benefit does not depend on one convenient setting. We moved one assumption at a time: high-risk prevalence from 5% to 21%, high-risk texters half or twice as patient as everyone else, the aging weight from 15 minutes to none, 2 to 8 counsellors, and mean patience from 10 to 40 minutes. The reduction stayed between 17% and 45% across all 16 settings, and Saath kept 74% to 92% of the oracle's gain. It is smallest when the line is badly short-staffed (2 counsellors, 17%), when everyone is impatient (10-minute mean patience, 19%) and when waiting time is weighted heavily (15-minute aging, 21%). The full grid is in `results/queue_robustness.json`.
+
+To compare orderings fairly, each one is converted to a percentile rank among the posts before it meets the queue. A probability, a 0 to 6 level and a yes/no label then trade off against waiting time in the same way, and the deployed console sorts by the same rule.
 
 The Evidence tab replays one night in both orders (8 high-risk texters lost first-come, 6 with Saath, out of 29). That night is a selected example: of 100 simulated nights, it is the one whose gap is closest to the average gap.
 
