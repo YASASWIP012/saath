@@ -106,7 +106,7 @@ We also tried distilling the five LLM labels into the training targets as soft l
 | High-risk messages that miss the urgent band | at most 5% | 2.0% [0.4, 4.1] of 245 |
 | True level inside the plausible range | at least 90% on average | 90.0% |
 | Mean width of the range | | 2.5 levels; 32% are a single level |
-| Per-level ranges (Mondrian variant): true level inside, worst level | at least 90% at every level | 89% (level 0); 94.1% overall |
+| Per-level ranges (Mondrian variant): true level inside, worst level | at least 90% at every level, in expectation | 89% at level 0 (within sampling error of 351 posts); 94.1% overall |
 | Mean width of the per-level ranges | | 4.7 levels |
 
 The plain range is honest on average but uneven by level: 76%, 76% and 72% for levels 3, 4 and 5, against 90 to 94% elsewhere. Calibrating one cut-off per level fixes that, with every level at 89% or more, but the ranges grow to 4.7 of 7 levels, which tells a counsellor little. The console shows the plain range, and the per-level version is one flag away (`LevelSets(by_level=True)`).
