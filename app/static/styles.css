@@ -154,3 +154,7 @@ footer { border-top: 1px solid var(--line); padding: 16px 24px; font-size: 13px;
 }
 
 .card .pin { margin-top: 8px; font: inherit; font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer; }
+
+.examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.examples p { width: 100%; margin: 0; }
+.examples button { font: inherit; font-size: 0.85rem; text-align: left; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line, #ccc); background: transparent; color: inherit; cursor: pointer; }

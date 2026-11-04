@@ -5,7 +5,8 @@ Neural Storm 2026 · Track 3 (Human Impact) · Problem statement HI-05, Mental H
 Saath sorts the waiting queue of a crisis text line by suicide risk, so the people closest to acting reach a counsellor first. It runs on an ordinary laptop CPU. A helpline can host it on its own machine, and no message is ever sent to an outside API.
 
 - Team: Yasaswi Paruchuri (solo)
-- Live demo: DEMO_URL
+- Live demo: [huggingface.co/spaces/yasaswip012/saath](https://huggingface.co/spaces/yasaswip012/saath). The hosted page is a static copy of the console: the queue, the evidence and the night replay use responses the real model produced in advance (`scripts/build_static.py`), so it can score only its example messages. To score your own text, run it locally (below).
+- Code: [github.com/YASASWIP012/saath](https://github.com/YASASWIP012/saath)
 - Demo video (92 seconds): [video/saath_demo.mp4](video/saath_demo.mp4)
 
 To try it in a minute: open the live demo and press **Start a shift**. Click a card marked Critical to see which lines raised its score and the range of levels it could be. Then open the **Evidence** tab and press **Replay the night** to watch the same shift run in first-come order and in Saath order.
@@ -168,7 +169,7 @@ If you or someone you know is struggling, in India you can call Tele-MANAS on 14
 ## Run it locally
 
 ```bash
-git clone REPO_URL && cd saath
+git clone https://github.com/YASASWIP012/saath && cd saath
 uv sync                                               # Python 3.12
 uv run python scripts/cv_predict.py keyword
 uv run python scripts/cv_predict.py tfidf

@@ -2,7 +2,22 @@ const LEVEL_SHORT = ["Not related", "Wish dead", "Thoughts", "Method", "Intent",
 const HIGH = 4;
 const $ = (s) => document.querySelector(s);
 
+// The hosted copy is static: every response was produced by the real API
+// ahead of time, and only new text needs the Python server.
+let STATIC_SCORES = null;
+async function staticApi(path, body) {
+  const get = async (f) => (await fetch(`data/${f}.json`)).json();
+  if (!body) return get(path.split("/").pop());
+  STATIC_SCORES = STATIC_SCORES || (await get("scores"));
+  const one = (t) => {
+    if (!(t in STATIC_SCORES)) throw new Error("static");
+    return STATIC_SCORES[t];
+  };
+  return path.endsWith("batch") ? body.texts.map(one) : one(body.text);
+}
+
 async function api(path, body) {
+  if (window.SAATH_STATIC) return staticApi(path, body);
   const res = await fetch(path, body ? {
     method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body),
   } : undefined);
@@ -182,12 +197,30 @@ document.querySelectorAll(".seg button").forEach((b) => b.addEventListener("clic
 }));
 
 // ---------- try a message ----------
+if (window.SAATH_STATIC) {
+  fetch("data/examples.json").then((r) => r.json()).then((ex) => {
+    const box = document.createElement("div");
+    box.className = "examples";
+    box.innerHTML = `<p class="muted">Scored in advance by the same model:</p>` +
+      ex.map((t, i) => `<button type="button" data-i="${i}">${escapeHtml(t.slice(0, 60))}…</button>`).join("");
+    $("#try-form").after(box);
+    box.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
+      $("#try-text").value = ex[+b.dataset.i];
+      $("#try-form").requestSubmit();
+    }));
+  });
+}
 $("#try-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const text = $("#try-text").value.trim();
   if (!text) return;
   $("#try-result").innerHTML = `<p class="muted">Scoring…</p>`;
-  const s = await api("/api/score", { text });
+  let s;
+  try { s = await api("/api/score", { text }); } catch (err) {
+    if (!window.SAATH_STATIC) throw err;
+    $("#try-result").innerHTML = `<p class="muted">This hosted copy is static, so it can only show messages scored in advance. Pick one of the examples, or run Saath locally (see the README) to score your own text.</p>`;
+    return;
+  }
   renderDetail($("#try-result"), s, META, "Your message", text);
 });
 
