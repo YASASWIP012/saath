@@ -4,9 +4,9 @@ Neural Storm 2026 · Track 3 (Human Impact) · Problem statement HI-05, Mental H
 
 Saath sorts the waiting queue of a crisis text line by suicide risk, so the people closest to acting reach a counsellor first. It runs on an ordinary laptop CPU. A helpline can host it on its own machine, and no message is ever sent to an outside API.
 
-- Team: TEAM_LINE
+- Team: Yasaswi Paruchuri (solo)
 - Live demo: DEMO_URL
-- Two-minute video: VIDEO_URL
+- Demo video (86 seconds): [video/saath_demo.mp4](video/saath_demo.mp4)
 
 ![The Saath live queue](docs/queue.png)
 
@@ -167,6 +167,7 @@ scripts/         cross-validation, evaluation, final training, stress tests
 tests/           unit and API tests, including a check that the conformal cut-off keeps its promise
 results/         report.json and every intermediate result
 data/stress/     the 56 code-mixed test messages
+video/           script that records the console and assembles the demo video
 ```
 
 ## AI tools used
@@ -178,3 +179,4 @@ The hackathon rules ask every team to disclose AI development tools. This projec
 - C-SSRS labelled posts: Patil, Tao and Gedhu, "Evaluating Reasoning LLMs for Suicide Screening with the Columbia-Suicide Severity Rating Scale", 2025, CC BY 4.0.
 - External test corpus: N. Komati, "Suicide and Depression Detection", Kaggle.
 - Encoders: intfloat/multilingual-e5-base and sentence-transformers/all-mpnet-base-v2.
+- Video opening photo: Madison Inouye on [Pexels](https://www.pexels.com/photo/water-droplets-on-glass-window-3728298/). The video is rebuilt from the running app by `video/build.py`.
