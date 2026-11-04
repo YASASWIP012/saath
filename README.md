@@ -8,6 +8,8 @@ Saath sorts the waiting queue of a crisis text line by suicide risk, so the peop
 - Live demo: DEMO_URL
 - Demo video (92 seconds): [video/saath_demo.mp4](video/saath_demo.mp4)
 
+To try it in a minute: open the live demo and press **Start a shift**. Click a card marked Critical to see which lines raised its score and the range of levels it could be. Then open the **Evidence** tab and press **Replay the night** to watch the same shift run in first-come order and in Saath order.
+
 ![The Saath live queue](docs/queue.png)
 
 ![One night, two queues: the same shift in first-come order and in Saath order](docs/evidence.png)
