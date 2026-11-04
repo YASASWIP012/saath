@@ -5,7 +5,7 @@ Neural Storm 2026 · Track 3 (Human Impact) · Problem statement HI-05, Mental H
 Saath sorts the waiting queue of a crisis text line by suicide risk, so the people closest to acting reach a counsellor first. It runs on an ordinary laptop CPU. A helpline can host it on its own machine, and no message is ever sent to an outside API.
 
 - Team: Yasaswi Paruchuri (solo)
-- Live demo: [huggingface.co/spaces/yasaswip012/saath](https://huggingface.co/spaces/yasaswip012/saath). The hosted page is a static copy of the console. The queue, the evidence and the night replay show responses the full model produced in advance (`scripts/build_static.py`). Text you type there is scored in your browser by the TF-IDF member of the ensemble alone (κ 0.70 against 0.81 for the full model), without the plausible range, bands or evidence. Run it locally (below) for the full model.
+- Live demo: [huggingface.co/spaces/yasaswip012/saath](https://huggingface.co/spaces/yasaswip012/saath). The hosted page is a static copy of the console. The queue, the evidence and the night replay show responses the full model produced in advance (`scripts/build_static.py`). Text you type there is scored in your browser by the TF-IDF member of the ensemble alone (κ 0.70 against 0.81 for the full model). It highlights the sentences behind that score the same way the full model does, but gives no plausible range or band. Run it locally (below) for the full model.
 - Code: [github.com/YASASWIP012/saath](https://github.com/YASASWIP012/saath)
 - Demo video (92 seconds): [video/saath_demo.mp4](video/saath_demo.mp4)
 

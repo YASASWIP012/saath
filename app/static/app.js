@@ -67,6 +67,18 @@ async function browserScore(text) {
   return { browser: true, exceed, level: exceed.filter((p) => p > 0.5).length, risk: exceed[HIGH - 1], indic: share >= 0.15 };
 }
 
+// Same occlusion rule as saath/evidence.py: how much the risk drops when a sentence is removed.
+async function browserEvidence(text, risk) {
+  const parts = text.split(/(?<=[.!?…])\s+|\n+/).map((p) => p.trim()).filter(Boolean);
+  if (parts.length < 2) return [];
+  const out = [];
+  for (let i = 0; i < parts.length; i++) {
+    const rest = parts.filter((_, j) => j !== i).join(" ");
+    out.push({ sentence: parts[i], weight: risk - (await browserScore(rest)).risk });
+  }
+  return out;
+}
+
 async function api(path, body) {
   if (window.SAATH_STATIC) return staticApi(path, body);
   const res = await fetch(path, body ? {
@@ -273,13 +285,18 @@ $("#try-form").addEventListener("submit", async (e) => {
     return;
   }
   if (s.browser) {
+    const ev = await browserEvidence(text, s.risk);
     const lvl = META.levels[s.level] ?? s.level;
     $("#try-result").innerHTML = `
       <h3>Your message</h3>
       <p><b>Level ${s.level}</b> · ${escapeHtml(String(lvl))}</p>
       <p>Chance of level 4 or above (intent, plan or act): <b>${Math.round(s.risk * 100)}%</b></p>
+      ${ev.length ? `<p class="muted">Lines that raised this score, darker for more:</p><p>${ev.map((e) => {
+        const a = Math.max(0, e.weight) / Math.max(0.0001, ...ev.map((x) => x.weight));
+        return `<mark style="background: rgba(220, 90, 60, ${(0.08 + 0.5 * a).toFixed(2)})">${escapeHtml(e.sentence)}</mark>`;
+      }).join(" ")}</p>` : ""}
       ${s.indic ? `<p><b>Romanised Hindi or Telugu detected.</b> The full service sends this to a counsellor for review instead of trusting the score.</p>` : ""}
-      <p class="muted">Scored in your browser by the TF-IDF part of Saath only. On its own it agrees with the annotators less well than the full ensemble (κ about 0.70 against 0.81), and it gives no plausible range, urgent band or highlighted evidence. Run Saath locally for the full model.</p>`;
+      <p class="muted">Scored in your browser by the TF-IDF part of Saath only. On its own it agrees with the annotators less well than the full ensemble (κ about 0.70 against 0.81), and it gives no plausible range or urgent band. Run Saath locally for the full model.</p>`;
     return;
   }
   renderDetail($("#try-result"), s, META, "Your message", text);
