@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+data/cache/
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+*.log
+.claude/
+.env
+video/node_modules/
+video/out/

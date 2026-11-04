@@ -1,0 +1,23 @@
+{
+  "args": {
+    "model": "embed:sentence-transformers/all-mpnet-base-v2",
+    "tag": null,
+    "jury_weight": 0.0,
+    "epochs": 5,
+    "lr": 3e-05,
+    "seed": 0,
+    "C": 1.0,
+    "folds": 5
+  },
+  "summary": {
+    "qwk": 0.7456028349206821,
+    "exact": 0.5982905982905983,
+    "within_one": 0.8170940170940171,
+    "mae": 0.7837606837606838,
+    "hr_recall": 0.7673469387755102,
+    "hr_precision": 0.6911764705882353,
+    "hr_f1": 0.7272727272727273,
+    "hr_auroc": 0.9297826806398235,
+    "hr_auprc": 0.8199641810444959
+  }
+}

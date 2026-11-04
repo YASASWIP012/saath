@@ -1,0 +1,23 @@
+{
+  "args": {
+    "model": "embed:intfloat/multilingual-e5-base",
+    "tag": null,
+    "jury_weight": 0.0,
+    "epochs": 5,
+    "lr": 3e-05,
+    "seed": 0,
+    "C": 1.0,
+    "folds": 5
+  },
+  "summary": {
+    "qwk": 0.7531437086612115,
+    "exact": 0.5965811965811966,
+    "within_one": 0.8162393162393162,
+    "mae": 0.7692307692307693,
+    "hr_recall": 0.7836734693877551,
+    "hr_precision": 0.7300380228136882,
+    "hr_f1": 0.7559055118110236,
+    "hr_auroc": 0.9336127964699393,
+    "hr_auprc": 0.8245101207184771
+  }
+}

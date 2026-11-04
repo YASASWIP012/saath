@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saath · helpline triage</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <div>
+        <strong>Saath</strong>
+        <span class="sub">queue triage for crisis text lines</span>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="queue" aria-selected="true">Live queue</button>
+      <button role="tab" data-tab="try" aria-selected="false">Try a message</button>
+      <button role="tab" data-tab="evidence" aria-selected="false">Evidence</button>
+    </nav>
+  </header>
+
+  <p class="notice">
+    Decision support for trained counsellors. Saath only changes the order of the waiting queue. It never closes,
+    answers or turns away a conversation. Demo messages are written for this demo and are not from real people.
+  </p>
+
+  <main>
+    <section id="tab-queue" class="tab active">
+      <div class="queue-controls">
+        <div class="seg" role="radiogroup" aria-label="Queue order">
+          <button data-order="risk" class="on">Risk-ordered</button>
+          <button data-order="fifo">First come, first served</button>
+        </div>
+        <button id="shift" class="primary">Start a shift</button>
+        <div class="stats" id="stats"></div>
+      </div>
+      <div class="queue-layout">
+        <ol id="queue" class="queue" aria-live="polite"></ol>
+        <article id="detail" class="detail empty">
+          <p>Select a waiting conversation to see why it sits where it does.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="tab-try" class="tab">
+      <form id="try-form" class="try">
+        <label for="try-text">Type a message the way a texter might send it. English, Hinglish and Telugu-English all work.</label>
+        <textarea id="try-text" rows="5" maxlength="4000">I keep telling myself it will get better but I've started looking at the pills in the cupboard every night.</textarea>
+        <button class="primary" type="submit">Score it</button>
+      </form>
+      <article id="try-result" class="detail empty"><p>The result appears here.</p></article>
+    </section>
+
+    <section id="tab-evidence" class="tab">
+      <div id="evidence-body"><p class="muted">Loading results…</p></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>If you or someone you know is in crisis in India, call Tele-MANAS on <a href="tel:14416">14416</a> or <a href="tel:18008914416">1800-891-4416</a> (free, 24×7, 20 languages) or emergency services on <a href="tel:112">112</a>.</p>
+  </footer>
+
+  <script src="/static/app.js" type="module"></script>
+</body>
+</html>

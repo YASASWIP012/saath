@@ -1,0 +1,18 @@
+{
+  "kind": "sklearn",
+  "trained_on": 1170,
+  "encoders": [
+    "intfloat/multilingual-e5-base",
+    "sentence-transformers/all-mpnet-base-v2"
+  ],
+  "config": {
+    "model": "ensemble",
+    "tag": "ens_C2_j0",
+    "jury_weight": 0.0,
+    "epochs": 5,
+    "lr": 3e-05,
+    "seed": 0,
+    "C": 2.0,
+    "folds": 5
+  }
+}

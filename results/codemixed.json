@@ -1,0 +1,51 @@
+{
+  "n": 56,
+  "overall": {
+    "qwk": -0.016973125884016893,
+    "exact": 0.19642857142857142,
+    "within_one": 0.32142857142857145,
+    "mae": 2.9107142857142856,
+    "hr_recall": 0.0,
+    "hr_precision": 0.0,
+    "hr_f1": 0.0,
+    "hr_auroc": 0.7291666666666666,
+    "hr_auprc": 0.7392165461246237
+  },
+  "urgent_recall": 0.4166666666666667,
+  "detected_as_romanised": 51,
+  "missed_by_detector": [
+    "office lo work load ekkuva undi, weekend kosam wait chesthunna",
+    "i keep thinking about killing myself yaar, it scares me",
+    "kaunsa tareeka sabse kam dard wala hoga, yahi sochta rehta hoon",
+    "building paina nunchi chusthe ekkuva alochanalu vasthayi",
+    "ippude tablets anni vesukunna, kallu tirugutunnayi"
+  ],
+  "high_risk_kept_out_of_routine": 1.0,
+  "high_risk_routine_texts": [],
+  "by_language": {
+    "hinglish": {
+      "qwk": -0.02764976958525356,
+      "exact": 0.22857142857142856,
+      "within_one": 0.34285714285714286,
+      "mae": 2.857142857142857,
+      "hr_recall": 0.0,
+      "hr_precision": 0.0,
+      "hr_f1": 0.0,
+      "hr_auroc": 0.6266666666666667,
+      "hr_auprc": 0.6385367965367965,
+      "urgent_recall": 0.3333333333333333
+    },
+    "tenglish": {
+      "qwk": 0.0,
+      "exact": 0.14285714285714285,
+      "within_one": 0.2857142857142857,
+      "mae": 3.0,
+      "hr_recall": 0.0,
+      "hr_precision": 0.0,
+      "hr_f1": 0.0,
+      "hr_auroc": 0.9259259259259259,
+      "hr_auprc": 0.9333333333333336,
+      "urgent_recall": 0.5555555555555556
+    }
+  }
+}

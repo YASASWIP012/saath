@@ -1,0 +1,39 @@
+[project]
+name = "saath"
+version = "0.1.0"
+description = "Risk-ordered queue triage for crisis text lines"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.162.0",
+    "huggingface-hub>=2.4.0",
+    "joblib>=1.6.0",
+    "numpy>=2.5.4",
+    "pandas>=3.1.0",
+    "protobuf>=7.36.2",
+    "pyarrow>=26.0.1",
+    "scikit-learn>=1.9.1",
+    "scipy>=1.18.1",
+    "sentence-transformers>=6.2.0",
+    "sentencepiece>=0.2.2",
+    "tiktoken>=0.14.0",
+    "torch>=2.15.0",
+    "transformers>=5.22.1",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[tool.uv]
+package = false
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
