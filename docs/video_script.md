@@ -10,9 +10,9 @@ Saath reorders that queue by suicide risk. It reads each waiting message, estima
 Counsellors can see the reasoning. The lines that drove the score are highlighted, and the card shows a range of plausible levels instead of a single confident guess.
 
 **Scene 4. Two built-in promises (0:45 to 0:60)**
-At most one in twenty high-risk messages may fall outside the urgent band. In testing, 4.5% did. Messages in romanised Hindi or Telugu, which the model still reads poorly, are never marked routine.
+At most one in twenty high-risk messages may fall outside the urgent band. In testing, 2% did. Messages in romanised Hindi or Telugu, which the model still reads poorly, are never marked routine.
 
-**Scene 5. The result (0:60 to 0:80)**
-We replayed a busy shift three hundred times. In first-come order, 22% of high-risk texters gave up waiting. With Saath it was 16%, about a quarter fewer people lost. It runs on a laptop CPU, so no message ever leaves the helpline.
+**Scene 5. The result (0:60 to 0:85)**
+Here is one typical night, replayed twice with the same arrivals. Over three hundred such nights, 22% of high-risk texters gave up waiting in first-come order, and 16% with Saath. The gain held when we changed staffing, patience and how common high-risk messages are. It runs on a laptop CPU, so no message ever leaves the helpline.
 
 If you or someone you know is struggling, in India you can call Tele-MANAS on 14416.

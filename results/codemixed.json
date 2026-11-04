@@ -8,10 +8,10 @@
     "hr_recall": 0.0,
     "hr_precision": 0.0,
     "hr_f1": 0.0,
-    "hr_auroc": 0.7291666666666666,
-    "hr_auprc": 0.7392165461246237
+    "hr_auroc": 0.72265625,
+    "hr_auprc": 0.7283579118478972
   },
-  "urgent_recall": 0.4166666666666667,
+  "urgent_recall": 0.5,
   "detected_as_romanised": 51,
   "missed_by_detector": [
     "office lo work load ekkuva undi, weekend kosam wait chesthunna",
@@ -31,8 +31,8 @@
       "hr_recall": 0.0,
       "hr_precision": 0.0,
       "hr_f1": 0.0,
-      "hr_auroc": 0.6266666666666667,
-      "hr_auprc": 0.6385367965367965,
+      "hr_auroc": 0.6133333333333334,
+      "hr_auprc": 0.6292352092352091,
       "urgent_recall": 0.3333333333333333
     },
     "tenglish": {
@@ -45,7 +45,7 @@
       "hr_f1": 0.0,
       "hr_auroc": 0.9259259259259259,
       "hr_auprc": 0.9333333333333336,
-      "urgent_recall": 0.5555555555555556
+      "urgent_recall": 0.7777777777777778
     }
   }
 }

@@ -210,9 +210,24 @@ async function loadEvidence() {
     const r = await api("/api/results");
     evidenceLoaded = true;
     const h = r.queue.headline;
+    const rr = r.queue_robustness?.post_bootstrap?.relative_reduction_vs_fifo;
+    const cells = r.queue_robustness?.sensitivity || [];
+    const red = cells.map((c) => c.relative_reduction);
+    const sens = red.length ? `Across ${red.length} alternative settings: ${Math.round(Math.min(...red) * 100)}–${Math.round(Math.max(...red) * 100)}%.` : "";
     el.innerHTML = `
+      ${r.night ? `<div class="detail night">
+        <div class="night-head"><h3>One night, two queues</h3><button class="primary" id="replay">Replay the night</button></div>
+        <p class="muted" style="margin:0 0 12px;font-size:13px">The same 12-hour shift at 1.1× load: identical arrivals, identical patience, 4 counsellors. Only the order of the queue differs.</p>
+        <div class="race">
+          <div class="lane"><div class="lane-name">First come, first served</div><div class="count" id="c-fifo">0</div><div class="lane-sub">high-risk texters gave up</div></div>
+          <div class="lane ours"><div class="lane-name">Saath</div><div class="count" id="c-saath">0</div><div class="lane-sub">high-risk texters gave up</div></div>
+          <div class="lane clock"><div class="lane-name">Shift clock</div><div class="count" id="c-clock">00:00</div><div class="lane-sub" id="c-arrived">0 high-risk texters so far</div></div>
+        </div>
+        <div id="race-chart"></div>
+      </div>` : ""}
       <div class="kpis">
         <div class="kpi"><div class="v">${Math.round(h.fifo * 100)}% → ${Math.round(h.saath * 100)}%</div><div class="l">High-risk texters who give up before anyone answers, at ${h.load}× load (first come vs Saath)</div></div>
+        ${rr ? `<div class="kpi"><div class="v">${Math.round(rr.mean * 100)}% fewer</div><div class="l">High-risk people lost, 95% CI ${Math.round(rr.ci[0] * 100)}–${Math.round(rr.ci[1] * 100)}% from resampling the posts. ${sens}</div></div>` : ""}
         <div class="kpi"><div class="v">${fmt(r.urgent.miss_rate * 100, 1)}%</div><div class="l">High-risk messages that missed the urgent band in testing (promised ≤ ${Math.round(r.urgent.alpha * 100)}%)</div></div>
         <div class="kpi"><div class="v">${fmt(r.models.find((m) => m.ours).hr_auroc[0], 3)}</div><div class="l">AUROC for level 4+ on held-out posts</div></div>
         <div class="kpi"><div class="v">${r.latency_ms} ms</div><div class="l">Per message on a laptop CPU. No text leaves the machine.</div></div>
@@ -226,9 +241,43 @@ async function loadEvidence() {
           <tbody>${r.models.map((m) => `<tr class="${m.ours ? "ours" : ""}"><td>${m.name}</td><td class="num">${ci(m.qwk)}</td><td class="num">${ci(m.hr_recall)}</td><td class="num">${ci(m.hr_precision)}</td></tr>`).join("")}</tbody></table>
           <p class="muted" style="font-size:13px">${r.models_note}</p></div>
       </div>`;
+    if (r.night) {
+      $("#replay").addEventListener("click", () => playNight(r.night));
+      playNight(r.night);
+    }
   } catch (err) {
     el.innerHTML = `<p class="muted">Results are not available yet (${escapeHtml(String(err))}).</p>`;
   }
+}
+
+let nightTimer = null;
+function playNight(night) {
+  clearInterval(nightTimer);
+  const { t } = night.fifo;
+  const W = 900, H = 160, P = { l: 36, r: 10, t: 10, b: 24 };
+  const yMax = Math.max(...night.fifo.hr_gave_up, 1) * 1.1;
+  const x = (i) => P.l + (i / (t.length - 1)) * (W - P.l - P.r);
+  const y = (v) => H - P.b - (v / yMax) * (H - P.t - P.b);
+  const path = (arr, n) => arr.slice(0, n + 1).map((v, i) => `${i ? "L" : "M"}${x(i)},${y(v)}`).join("");
+  let i = 0;
+  const draw = () => {
+    $("#c-fifo").textContent = night.fifo.hr_gave_up[i];
+    $("#c-saath").textContent = night.saath.hr_gave_up[i];
+    const m = t[i];
+    $("#c-clock").textContent = `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
+    $("#c-arrived").textContent = `${night.fifo.hr_arrived[i]} high-risk texters so far`;
+    $("#race-chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Cumulative high-risk give-ups over the shift">
+      ${[0, 0.5, 1].map((f) => `<line x1="${P.l}" x2="${W - P.r}" y1="${y(f * yMax)}" y2="${y(f * yMax)}" stroke="var(--line)"/><text x="${P.l - 6}" y="${y(f * yMax) + 4}" text-anchor="end">${Math.round(f * yMax)}</text>`).join("")}
+      ${[0, 3, 6, 9, 12].map((h) => `<text x="${x((h * 60) / (t[t.length - 1]) * (t.length - 1))}" y="${H - 6}" text-anchor="middle">${h}h</text>`).join("")}
+      <path d="${path(night.fifo.hr_gave_up, i)}" fill="none" stroke="var(--muted)" stroke-width="2.5"/>
+      <path d="${path(night.saath.hr_gave_up, i)}" fill="none" stroke="var(--urgent)" stroke-width="2.5"/></svg>`;
+  };
+  draw();
+  nightTimer = setInterval(() => {
+    i += 1;
+    if (i >= t.length) { clearInterval(nightTimer); return; }
+    draw();
+  }, 60);
 }
 
 // ---------- boot ----------

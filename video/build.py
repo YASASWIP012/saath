@@ -46,14 +46,15 @@ SCENES = [
     {
         "id": "language",
         "say": "At most one in twenty high-risk messages may fall outside the urgent band, and in testing, "
-        "four and a half percent did. Messages in romanised Hindi or Telugu, which the model still reads "
+        "two percent did. Messages in romanised Hindi or Telugu, which the model still reads "
         "poorly, are never put in the standard queue.",
     },
     {
         "id": "evidence",
-        "say": "We replayed a busy shift three hundred times. In first-come order, twenty-two percent of "
-        "high-risk texters gave up waiting. With Saath it was sixteen percent, about a quarter fewer people "
-        "lost. It runs on a laptop CPU, so no message ever leaves the helpline.",
+        "say": "Here is one typical night, replayed twice with the same arrivals. Over three hundred such nights, "
+        "twenty-two percent of high-risk texters gave up waiting in first-come order, and sixteen percent "
+        "with Saath. The gain held when we changed staffing, patience and how common high-risk messages are. "
+        "It runs on a laptop CPU, so no message ever leaves the helpline.",
     },
     {
         "id": "outro",
@@ -222,10 +223,12 @@ async def record(scene_id, seconds) -> Path:
             await t(int(seconds * 1000) - 4000)
         elif scene_id == "evidence":
             await page.click("[data-tab=evidence]")
-            await page.wait_for_selector(".kpi", timeout=60_000)
-            await t(int(seconds * 1000 * 0.55))
-            await page.mouse.wheel(0, 300)
-            await t(int(seconds * 1000 * 0.45))
+            await page.wait_for_selector("#replay", timeout=60_000)
+            await t(1500)
+            await page.click("#replay")  # restart so the race is on camera
+            await t(int(seconds * 1000 * 0.6))
+            await page.mouse.wheel(0, 420)
+            await t(int(seconds * 1000 * 0.4))
         await ctx.close()
         await browser.close()
     return next(vid_dir.glob("*.webm"))

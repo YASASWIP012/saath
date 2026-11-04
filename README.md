@@ -10,6 +10,8 @@ Saath sorts the waiting queue of a crisis text line by suicide risk, so the peop
 
 ![The Saath live queue](docs/queue.png)
 
+![One night, two queues: the same shift in first-come order and in Saath order](docs/evidence.png)
+
 ## Result
 
 We replayed a busy helpline shift 300 times. In each replay every ordering saw the same arrivals, the same conversation lengths and the same patience, so the only thing that changed was the order of the queue.
@@ -20,13 +22,15 @@ At 1.1× load, meaning 10% more conversations arrive than the counsellors can ha
 |---|---|
 | First come, first served | 22.0% |
 | Keyword rules | 17.3% |
-| Saath | 16.0% |
+| Saath | 15.7% |
 | Frontier LLM labels | 15.2% |
 | Perfect knowledge of the true level | 14.4% |
 
-Saath loses 27.6% fewer high-risk people than first-come order (95% CI on the mean difference: 5.4 to 6.8 percentage points), which is 79% of the improvement a perfect oracle would get. At 1.5× load the reduction is 35%, from 35.6% to 23.0%.
+Saath loses 29% fewer high-risk people than first-come order, which is 83% of the improvement a perfect oracle would get. The interval that matters here is over posts, not over simulation runs, because only 245 of the 1,170 posts are high risk. Resampling the posts 200 times and re-running the replay on each resample gives a reduction of 28% (95% CI 21% to 36%). Saath beat first-come order in every resample and keyword rules in 97% of them. Against the frontier LLM ordering the difference was 0.5 points in the LLMs' favour (95% CI from 1.8 points for the LLMs to 0.9 points for Saath), so the two are not distinguishable at this sample size.
 
-Low-risk texters pay for this. Their give-up rate rises from 22.3% to 24.1%, while the total share of people who give up stays the same (22.3% against 22.4%). Saath changes who waits, and the queue as a whole is no longer than before.
+Low-risk texters pay for this. Their give-up rate rises from 22.3% to 24.2%, while the total share of people who give up stays the same (22.3% against 22.4%). Saath changes who waits, and the queue as a whole is no longer than before.
+
+The benefit does not depend on one convenient setting. Moving one assumption at a time (high-risk prevalence from 5% to 21%, high-risk texters half or twice as patient as others, the aging weight from 15 minutes to none, 2 to 8 counsellors, mean patience from 10 to 40 minutes), the reduction stayed between 17% and 44% and Saath kept 65% to 92% of the oracle's gain. It is smallest when the queue is very short-staffed (2 counsellors, 17%) and when waiting time is weighted heavily (15-minute aging, 21%). The full grid is in `results/queue_robustness.json`.
 
 ## Problem
 
@@ -60,10 +64,10 @@ Data. 1,170 posts from r/SuicideWatch, labelled by human annotators on the Colum
 
 Model. Two frozen encoders (multilingual-e5-base and all-mpnet-base-v2) and a word and character TF-IDF each feed six logistic heads, one per threshold "level > k". The ensemble averages the three. Cumulative heads keep the scale in order: calling a level-6 post level 5 costs one threshold, and calling it level 0 costs six. The triage score, P(level ≥ 4), is one of the six outputs.
 
-Guarantees. Both come from split conformal prediction and hold in finite samples, whether or not the model is accurate.
+Guarantees. Both come from split conformal prediction. The deployed model is fitted on 80% of the posts and both cut-offs are set on the other 20%, which it never saw, so each guarantee holds in finite samples for new messages drawn like the calibration posts, whether or not the model is accurate. The evaluation repeats this inside every fold (fit on 75% of the training folds, calibrate on the rest, test on the held-out fold).
 
 1. The urgent cut-off is the conformal quantile of the scores of high-risk calibration posts. A new high-risk message falls below it with probability at most 5%.
-2. For the plausible range, each level k gets the score min(P(Y ≤ k), P(Y ≥ k)), and the range keeps every level above a calibrated cut-off. The kept levels always form one contiguous range, and the true level is inside it at least 90% of the time.
+2. For the plausible range, each level k gets the score min(P(Y ≤ k), P(Y ≥ k)), and the range keeps every level above a calibrated cut-off. The kept levels always form one contiguous range, and the true level is inside it at least 90% of the time on average over messages.
 
 Evidence. Saath removes one sentence at a time and re-scores the message. A sentence's highlight is how far the high-risk probability drops without it.
 
@@ -71,7 +75,7 @@ Queue replay. A discrete-event simulation with Poisson arrivals, 4 counsellors, 
 
 ## Results
 
-Every number comes from five-fold cross-validation on posts the model did not train on, and `scripts/evaluate.py` regenerates all of them. Brackets are 95% bootstrap intervals.
+Every number comes from nested five-fold cross-validation on posts the model did not train on: the regularisation strength is chosen by an inner 4-fold search inside each training fold, so the reported test folds played no part in choosing it. `scripts/nested.py` and `scripts/evaluate.py` regenerate all of it. Brackets are 95% bootstrap intervals.
 
 ### Severity model
 
@@ -79,13 +83,15 @@ Every number comes from five-fold cross-validation on posts the model did not tr
 |---|---|---|---|---|
 | Keyword rules | 0.605 [0.554, 0.651] | 0.637 | 0.632 | 0.769 |
 | TF-IDF ordinal regression | 0.703 [0.659, 0.745] | 0.576 | 0.834 | 0.921 |
-| Saath (local ensemble) | 0.813 [0.780, 0.845] | 0.767 | 0.807 | 0.955 [0.942, 0.967] |
+| Saath (local ensemble) | 0.810 [0.775, 0.842] | 0.763 | 0.817 | 0.955 [0.942, 0.967] |
 | Best single frontier LLM, zero-shot | 0.878 [0.850, 0.904] | 0.922 | 0.799 | n/a |
 | Median of 5 frontier LLMs, zero-shot | 0.899 [0.875, 0.919] | 0.976 | 0.701 | n/a |
 
-The dataset authors collected the LLM labels from five large reasoning models prompted with the C-SSRS questions. Those models are better at the exact level, by 0.065 κ (95% CI 0.027 to 0.101). Among models that can run on a helpline's own hardware, Saath beats TF-IDF by 0.110 κ (0.075 to 0.147). In the queue, where the ranking matters more than the exact level, it comes within 0.8 points of the LLM ordering.
+The dataset authors collected the LLM labels from five large reasoning models prompted with the C-SSRS questions. Those models are better at the exact level, by 0.068 κ (95% CI 0.031 to 0.105), and we picked the "best single" one by its score on these same posts, which flatters it slightly. Among models a helpline can run on its own hardware, Saath beats TF-IDF by 0.107 κ (0.071 to 0.146). In the queue, where the ranking matters more than the exact level, the two orderings are statistically indistinguishable (see Result).
 
-Each encoder on its own reaches about 0.75 κ (e5 0.753, mpnet 0.746), and the ensemble adds 0.06. A third encoder, bge-base, scored 0.721 alone and was left out.
+Why not just call an LLM? A crisis line's transcripts are some of the most sensitive data any service holds. Sending each one to an outside API means a data-processing agreement, a cross-border transfer review and a dependency that can rate-limit or go down on the worst night of the year. Saath gives up 0.07 κ on the exact level to avoid all of that, and loses nothing measurable in the queue.
+
+Each encoder on its own reaches about 0.75 κ (e5 0.753, mpnet 0.746), and the ensemble adds 0.06. A third encoder, bge-base, scored 0.721 alone and was left out. Without nesting, the same configuration scored 0.813, so tuning on the test folds had inflated the estimate by only 0.003.
 
 We also tried distilling the five LLM labels into the training targets as soft labels, at weights 0.3 and 0.5. Ranking did not change (AUROC 0.956 against 0.955), and the model began over-calling high risk the way the LLMs do, so we kept the plain version.
 
@@ -93,13 +99,17 @@ We also tried distilling the five LLM labels into the training targets as soft l
 
 | | Promised | Observed |
 |---|---|---|
-| High-risk messages that miss the urgent band | at most 5% | 4.5% [2.0, 7.3] |
-| True level inside the plausible range | at least 90% | 90.1% |
+| High-risk messages that miss the urgent band | at most 5% | 2.0% [0.4, 4.1] of 245 |
+| True level inside the plausible range | at least 90% on average | 90.0% |
 | Mean width of the range | | 2.5 levels; 32% are a single level |
+| Per-level ranges (Mondrian variant): true level inside, worst level | at least 90% at every level | 89% (level 0); 94.1% overall |
+| Mean width of the per-level ranges | | 4.7 levels |
 
-Both guarantees are marginal. Broken down by true level, coverage is weakest in the middle of the scale: 74%, 78% and 68% for levels 3, 4 and 5, against 92 to 94% for levels 0, 1, 2 and 6. The urgent band is also wide. It holds 41% of messages, and 48% of those are truly high risk. That is the cost of promising to miss at most one high-risk person in twenty.
+The plain range is honest on average but uneven by level: 76%, 76% and 72% for levels 3, 4 and 5, against 90 to 94% elsewhere. Calibrating one cut-off per level fixes that, with every level at 89% or more, but the ranges grow to 4.7 of 7 levels, which tells a counsellor little. The console shows the plain range, and the per-level version is one flag away (`LevelSets(by_level=True)`).
 
-The raw risk probability is over-confident (ECE 0.150) because the heads use balanced class weights. A cross-fitted isotonic map brings this to 0.025, and that recalibrated number is the one a counsellor sees. The ranking and both guarantees use the raw score, which an isotonic map cannot reorder.
+The urgent band is wide. It holds 47% of messages, and 43% of those are truly high risk. That is the cost of promising to miss at most one high-risk person in twenty with a calibration set of about 50 high-risk posts per fold. Ranking inside the band still puts the clearest cases first, which is what the queue result measures.
+
+The raw risk probability is over-confident (ECE 0.120) because the heads use balanced class weights. A cross-fitted isotonic map brings this to 0.021, and that recalibrated number is the one a counsellor sees. The ranking and both guarantees use the raw score, which an isotonic map cannot reorder.
 
 ### Stress tests
 
@@ -108,17 +118,17 @@ Code-mixed messages. Many Indian texters write Hindi or Telugu in Latin script, 
 | On the 56 code-mixed messages | Result |
 |---|---|
 | Weighted κ | about 0 (−0.02) |
-| AUROC, level 4+ | 0.73 (Hinglish 0.63, Telugu-English 0.93) |
-| High-risk messages placed in the urgent band | 10 of 24 (42%) |
+| AUROC, level 4+ | 0.72 (Hinglish 0.61, Telugu-English 0.93) |
+| High-risk messages placed in the urgent band | 12 of 24 (50%) |
 | High-risk messages kept out of the standard band, with the language check | 24 of 24 |
 | Messages the language check recognised as romanised Hindi or Telugu | 51 of 56 |
 | English posts it wrongly flagged | 0 of 1,170 |
 
-Because of this result, the service will not put a romanised Hindi or Telugu message in the standard band; it sends those messages to review for a counsellor to read. The detector's word list was written after we saw these messages, so its 51 of 56 is optimistic. The five it missed are in `results/codemixed.json`. A real fix needs labelled code-mixed training data, which we did not have.
+A planned fix, adding a multilingual encoder (LaBSE or L3Cube's Indic SBERT) chosen on half of these messages and tested on the other half, did not fit in the 48 hours. Because of this result, the service will not put a romanised Hindi or Telugu message in the standard band; it sends those messages to review for a counsellor to read. The detector's word list was written after we saw these messages, so its 51 of 56 is optimistic. The five it missed are in `results/codemixed.json`. A real fix needs labelled code-mixed training data, which we did not have.
 
-A different corpus. We took 1,000 posts the model had never seen from another public dataset, half from r/SuicideWatch and half from r/teenagers (Komati, Kaggle), after removing any post that also appears in our training data. Its labels only say whether a post is about suicide, so we checked P(level ≥ 1). AUROC was 0.941 [0.927, 0.954]. The high-risk score passed 0.5 for 23.4% of the SuicideWatch posts and 7.0% of the r/teenagers posts.
+A different corpus. We took 1,000 posts the model had never seen from another public dataset, half from r/SuicideWatch and half from r/teenagers (Komati, Kaggle), after removing any post that also appears in our training data. Its labels only say whether a post is about suicide, so we checked P(level ≥ 1). AUROC was 0.940 [0.926, 0.954]. The high-risk score passed 0.5 for 22.2% of the SuicideWatch posts and 5.0% of the r/teenagers posts. This checks only whether the model can tell suicide-related posts from others; it says nothing about severity, because this corpus has no severity labels.
 
-Speed. On the laptop CPU, scoring one message takes a median of 110 ms (95th percentile 150 ms), with both encoders running. The demo server runs on CPU only.
+Speed. On the laptop CPU, scoring one message takes a median of 104 ms (95th percentile 146 ms), with both encoders running. The demo server runs on CPU only.
 
 ## Limitations and responsible use
 
@@ -126,7 +136,9 @@ Saath is not a diagnostic tool. The C-SSRS levels here come from annotators read
 
 Reddit posts are not helpline chats. They are about as long as an opening message on a text line (median 283 characters), but the tone and context differ. A helpline adopting Saath should re-calibrate both cut-offs on its own labelled transcripts, which `saath/conformal.py` is written to do.
 
-The simulator is a model of a helpline. Arrival rate, patience and conversation length are assumptions. We sweep load from 0.8× to 1.5× to show the effect holds across that range, and a real deployment should replay its own logs.
+The simulator is a model of a helpline. Arrival rate, patience and conversation length are assumptions, and any ordering that puts risk first will cut high-risk abandonment in a model where patience does not depend on risk. What the replay measures is how much of that possible gain each ordering captures, and how it holds up when the assumptions move (see the sensitivity grid). A real deployment should replay its own logs.
+
+The 1,170 posts are resampled with replacement to fill each replay, and the pool is 21% high risk, likely far above a real helpline. The sensitivity grid includes 5% and 10% prevalence for that reason.
 
 Code-mixed text is the weakest point, as the stress test shows. The language check is a safety net and does not fix the model.
 
@@ -141,12 +153,13 @@ git clone REPO_URL && cd saath
 uv sync                                               # Python 3.12
 uv run python scripts/cv_predict.py keyword
 uv run python scripts/cv_predict.py tfidf
-uv run python scripts/cv_predict.py ensemble --C 2 --tag ens_C2_j0
-uv run python scripts/train_final.py --oof ens_C2_j0  # writes artifacts/
+uv run python scripts/nested.py                       # nested CV + split-conformal checks
+uv run python scripts/queue_robustness.py             # post bootstrap + sensitivity grid
+uv run python scripts/train_final.py                  # writes artifacts/
 uv run python scripts/stress.py                       # code-mixed, external corpus, latency
-uv run python scripts/evaluate.py --ours ens_C2_j0    # writes results/report.json
+uv run python scripts/evaluate.py                     # writes results/report.json
 uv run uvicorn app.main:app --port 8000               # open http://localhost:8000
-uv run pytest                                         # 14 tests
+uv run pytest                                         # 16 tests
 ```
 
 The dataset downloads itself from Hugging Face on the first run. On an 8 GB M1 laptop the full pipeline takes about 15 minutes, mostly spent encoding.

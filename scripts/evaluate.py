@@ -163,8 +163,25 @@ def main():
         iso = IsotonicRegression(out_of_bounds="clip", y_min=0, y_max=1).fit(ours_risk[cal_idx], hr[cal_idx])
         shown[te] = iso.predict(ours_risk[te])
 
+    # One concrete night for the console's side-by-side replay: the seed whose
+    # first-come vs Saath gap is closest to the average gap, so it is typical.
+    scn = queue_sim.Scenario(load=1.1)
+    gaps = []
+    for seed in range(100):
+        f = queue_sim.outcomes(queue_sim.replay(None, y, scn, seed))["hr_abandon"]
+        g = queue_sim.outcomes(queue_sim.replay(ours_risk, y, scn, seed))["hr_abandon"]
+        gaps.append(f - g)
+    typical = int(np.argmin(np.abs(np.array(gaps) - np.mean(gaps))))
+    night = {
+        "seed": typical,
+        "scenario": scn.__dict__,
+        "fifo": queue_sim.timeline(queue_sim.replay(None, y, scn, typical), scn.hours * 60),
+        "saath": queue_sim.timeline(queue_sim.replay(ours_risk, y, scn, typical), scn.hours * 60),
+    }
+
     report = {
         "n_posts": len(y),
+        "night": night,
         "level_counts": {int(k): int((y == k).sum()) for k in range(data.N_LEVELS)},
         "models": rows,
         "vs_best_llm_qwk": vs_best,
@@ -186,7 +203,7 @@ def main():
             "patience. Shaded bands are 95% intervals for the mean. Oracle knows the true level.",
         },
     }
-    for extra in ["codemixed", "external", "latency", "queue_robustness", "codemixed_select"]:
+    for extra in ["codemixed", "external", "latency", "queue_robustness"]:
         p = OUT / f"{extra}.json"
         if p.exists():
             report[extra] = json.loads(p.read_text())

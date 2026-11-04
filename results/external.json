@@ -1,11 +1,11 @@
 {
   "n": 1000,
-  "auroc_suicide_related": 0.940636,
+  "auroc_suicide_related": 0.940296,
   "auroc_ci": [
-    0.9270426984146661,
-    0.9539619468298487
+    0.9264087056348225,
+    0.9538972058670452
   ],
-  "share_flagged_high_risk_in_suicide_posts": 0.234,
-  "share_flagged_high_risk_in_other_posts": 0.07,
-  "seconds": 161.6
+  "share_flagged_high_risk_in_suicide_posts": 0.222,
+  "share_flagged_high_risk_in_other_posts": 0.05,
+  "seconds": 98.9
 }

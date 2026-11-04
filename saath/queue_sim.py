@@ -104,7 +104,7 @@ def replay(priority, level, scn: Scenario, seed: int):
         heapq.heapreplace(free_at, t + service[i])
         wait[i] = t - arrive[i]
 
-    return {"level": lv, "wait": wait, "abandoned": abandoned}
+    return {"level": lv, "wait": wait, "abandoned": abandoned, "arrive": arrive, "patience": patience}
 
 
 def outcomes(run) -> dict:
@@ -129,3 +129,15 @@ def compare(policies: dict, level, scn: Scenario, seeds=range(200)) -> dict:
         for name, prio in policies.items():
             res[name].append(outcomes(replay(prio, level, scn, seed=s)))
     return {name: {k: np.array([r[k] for r in rows]) for k in rows[0]} for name, rows in res.items()}
+
+
+def timeline(run, horizon_min: float, step: float = 5.0) -> dict:
+    """Cumulative high-risk arrivals and give-ups, sampled every `step` minutes."""
+    hr = run["level"] >= HIGH_RISK
+    gave_up_at = np.where(run["abandoned"], run["arrive"] + run["patience"], np.inf)
+    ts = np.arange(0, horizon_min + step, step)
+    return {
+        "t": ts.tolist(),
+        "hr_arrived": [int((hr & (run["arrive"] <= t)).sum()) for t in ts],
+        "hr_gave_up": [int((hr & (gave_up_at <= t)).sum()) for t in ts],
+    }
