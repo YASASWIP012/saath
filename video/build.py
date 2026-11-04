@@ -211,9 +211,11 @@ async def record(scene_id, seconds) -> Path:
             await page.click("#shift")
             await t(7000)
             await page.click("#shift")  # pause so the card stays put
-            await page.click(".card.urgent")
+            await page.click(".card.critical, .card.urgent")
             await page.wait_for_selector("#detail .msg", timeout=60_000)
-            await t(int(seconds * 1000) - 6000)
+            await t(800)
+            await page.screenshot(path=str(ROOT / "docs" / "queue.png"))
+            await t(int(seconds * 1000) - 6800)
         elif scene_id == "language":
             await page.click("[data-tab=try]")
             await page.fill("#try-text", "")
@@ -227,6 +229,7 @@ async def record(scene_id, seconds) -> Path:
             await t(1500)
             await page.click("#replay")  # restart so the race is on camera
             await t(int(seconds * 1000 * 0.6))
+            await page.screenshot(path=str(ROOT / "docs" / "evidence.png"))
             await page.mouse.wheel(0, 420)
             await t(int(seconds * 1000 * 0.4))
         await ctx.close()
